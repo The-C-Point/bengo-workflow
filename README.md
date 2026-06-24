@@ -120,3 +120,9 @@ See CLAUDE.md for full schema.
 - Added **Per-view search** — filter-as-you-type on All Tasks, My Tasks, To-Dos, and Companies; searches name, podcast, company, notes, assignee
 - Added **Undo (Oh Crap button)** — fixed bottom-left button; undoes last status cycle, bulk update, or Kanban quick-edit; auto-hides after 12 seconds
 - Added **Google Drive folder link** — URL field on podcast modal; 📁 icon on podcast cards; auto-creates "Set up Google Drive production folder" to-do on new podcast (pre-completed if URL provided); auto-completes that to-do when URL is added on edit
+
+### 29 April 2026
+- Added **Kanban drag and drop** — drag cards between columns on both Tasks and To-Dos kanban boards; saves to Supabase on drop; undo supported; uses `addEventListener`-based approach for reliability
+- Added **Kanban horizontal scroll** — columns have a 220px minimum width; boards scroll horizontally on smaller screens
+- Added **Collapse Complete column** on To-Dos kanban — matches existing behaviour on Tasks kanban; starts collapsed, click strip to expand, ✕ to collapse
+- Set up local preview server via `npx serve` (`.claude/launch.json`)
