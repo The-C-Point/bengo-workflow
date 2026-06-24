@@ -172,7 +172,8 @@
   .view-toggle-btn{background:transparent;border:none;color:var(--text-muted);padding:6px 14px;cursor:pointer;font-family:'Varela Round',sans-serif;font-size:12px;transition:all .15s;}
   .view-toggle-btn.active{background:var(--accent);color:#1a1400;font-weight:600;}
   .view-toggle-btn:hover:not(.active){background:var(--surface2);color:var(--text);}
-  .kanban-board{display:grid;grid-template-columns:repeat(4,1fr) 48px;gap:14px;align-items:start;transition:grid-template-columns .3s;}.kanban-board.show-complete{grid-template-columns:repeat(5,1fr);}
+  .kanban-scroll{overflow-x:auto;padding-bottom:8px;}
+  .kanban-board{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr)) 48px;gap:14px;align-items:start;transition:grid-template-columns .3s;min-width:calc(220px*4 + 48px + 14px*4);}.kanban-board.show-complete{grid-template-columns:repeat(5,minmax(220px,1fr));min-width:calc(220px*5 + 14px*4);}
   .kanban-col{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
   .kanban-col-header{padding:12px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
   .kanban-col-header.todo{color:var(--todo-text);background:rgba(74,71,64,.2);}
@@ -286,7 +287,7 @@
           <table><thead><tr><th><input type="checkbox" id="selectAllTasks" onclick="toggleSelectAllTasks(this)" style="accent-color:var(--accent)"></th><th>Podcast</th><th>Episode</th><th>Task</th><th>Assigned To</th><th>Due Date</th><th>Status</th></tr></thead><tbody id="allTasksBody"></tbody></table>
         </div>
         <div id="tasksKanbanView" class="hidden">
-          <div class="kanban-board" id="kanbanBoard"></div>
+          <div class="kanban-scroll"><div class="kanban-board" id="kanbanBoard"></div></div>
         </div>
       </div>
 
@@ -322,7 +323,7 @@
           <table><thead><tr><th>Task</th><th>Assigned To</th><th>Podcast</th><th>Due Date</th><th>Status</th><th>Notes</th></tr></thead><tbody id="todosBody"></tbody></table>
         </div>
         <div id="todosKanbanView" class="hidden">
-          <div class="kanban-board" id="todoKanbanBoard"></div>
+          <div class="kanban-scroll"><div class="kanban-board" id="todoKanbanBoard"></div></div>
         </div>
       </div>
       <div id="view-people" class="hidden"><div class="people-grid" id="peopleGrid"></div><div id="emailConfigSection" style="margin-top:32px"></div></div>
@@ -1071,9 +1072,9 @@ function renderKanban(){
 }
 
 function toggleKanbanComplete(){
-  const board = document.getElementById('kanbanBoard');
+  const board=document.getElementById('kanbanBoard');
   board.classList.toggle('show-complete');
-  board.style.gridTemplateColumns = board.classList.contains('show-complete') ? 'repeat(5,1fr)' : 'repeat(4,1fr) 48px';
+  board.style.gridTemplateColumns=board.classList.contains('show-complete')?'repeat(5,minmax(220px,1fr))':'repeat(4,minmax(220px,1fr)) 48px';
   renderKanban();
 }
 
@@ -1086,9 +1087,20 @@ function renderTodoKanban(todos){
     {key:'Waiting / Blocked',cls:'waiting',label:'Waiting'},
     {key:'Complete',cls:'complete',label:'Complete'},
   ];
+  const board=document.getElementById('todoKanbanBoard');
+  const showComplete=board?.classList.contains('show-complete');
   const nextLabel={'To Do':'▶ Start','In Progress':'👁 Review','In Review':'⏸ Block','Waiting / Blocked':'✓ Complete','Complete':'↺ Reopen'};
-  document.getElementById('todoKanbanBoard').innerHTML=cols.map(col=>{
+  board.innerHTML=cols.map(col=>{
     const colTodos=todos.filter(t=>t.status===col.key);
+    const isComplete=col.key==='Complete';
+    if(isComplete&&!showComplete){
+      return`<div class="kanban-col collapsed" onclick="toggleTodoKanbanComplete()" title="Click to expand">
+        <div class="kanban-col-header ${col.cls}">
+          <span>${col.label} (${colTodos.length})</span>
+        </div>
+        <div class="kanban-cards"></div>
+      </div>`;
+    }
     const cards=colTodos.length?colTodos.map(t=>{
       const person=t.assigned_to?pById(t.assigned_to):null;
       const pod=t.podcast_id?podById(t.podcast_id):null;
@@ -1104,15 +1116,26 @@ function renderTodoKanban(todos){
           <button class="status-pill ${scls(t.status)}" style="font-size:10px;padding:2px 8px" onclick="event.stopPropagation();cycleTodo('${t.id}')">${nextLabel[t.status]||'▶'}</button>
         </div>
       </div>`;
-    }).join(''):`<div class="kanban-empty">Nothing here</div>`;
-    return`<div class="kanban-col">
+    }).join(''):`<div class="kanban-empty">${isComplete?'Nothing done yet':'Nothing here'}</div>`;
+    return`<div class="kanban-col${isComplete?' complete-col':''}">
       <div class="kanban-col-header ${col.cls}">
         <span>${col.label}</span>
-        <span class="kanban-col-count">${colTodos.length}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="kanban-col-count">${colTodos.length}</span>
+          ${isComplete?`<button onclick="toggleTodoKanbanComplete()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;padding:0" title="Collapse">✕</button>`:''}
+        </div>
       </div>
       <div class="kanban-cards">${cards}</div>
     </div>`;
   }).join('');
+}
+
+function toggleTodoKanbanComplete(){
+  const board=document.getElementById('todoKanbanBoard');
+  board.classList.toggle('show-complete');
+  board.style.gridTemplateColumns=board.classList.contains('show-complete')?'repeat(5,minmax(220px,1fr))':'repeat(4,minmax(220px,1fr)) 48px';
+  const todos=isAdmin?[...db.todos]:db.todos.filter(t=>t.assigned_to===loggedInUser?.id);
+  renderTodoKanban(todos);
 }
 
 function onUserChange(){currentUser=document.getElementById('currentUser').value;if(currentView==='mytasks')renderMyTasks();}
