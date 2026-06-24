@@ -168,6 +168,11 @@
   .company-badge.done{background:rgba(74,71,64,.2);color:var(--text-dim);}
 
   /* KANBAN */
+  .kanban-card[draggable=true]{cursor:grab;}
+  .kanban-card[draggable=true]:active{cursor:grabbing;}
+  .kanban-card.dragging{opacity:0.35;transform:scale(0.97);}
+  .kanban-cards.drag-over{background:rgba(212,175,55,0.08);outline:2px dashed var(--accent);outline-offset:-4px;border-radius:6px;}
+  .kanban-board.is-dragging .kanban-card{pointer-events:none;}
   .view-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-left:auto;}
   .view-toggle-btn{background:transparent;border:none;color:var(--text-muted);padding:6px 14px;cursor:pointer;font-family:'Varela Round',sans-serif;font-size:12px;transition:all .15s;}
   .view-toggle-btn.active{background:var(--accent);color:#1a1400;font-weight:600;}
@@ -1045,7 +1050,7 @@ function renderKanban(){
       const ep=epById(t.episode_id),pod=ep?podById(ep.podcast_id):null,person=t.assigned_to?pById(t.assigned_to):null;
       const od=t.due_date&&new Date(t.due_date)<today&&t.status!=='Complete';
       const kType=t._isTodo?'todo':'task';
-      return`<div class="kanban-card" onclick="openKpop('${kType}','${t.id}','${t.episode_id||''}')">
+      return`<div class="kanban-card" data-id="${t.id}" data-type="${kType}" onclick="if(!_wasDragging)openKpop('${kType}','${t.id}','${t.episode_id||''}')">
         <div class="kanban-card-title">${t.name}</div>
         <div class="kanban-card-meta">
           ${ep?`<span class="kanban-card-ep">${ep.default_title||'E'+ep.number}${ep.title?' · '+ep.title:''}</span>`:''}
@@ -1058,7 +1063,7 @@ function renderKanban(){
         </div>
       </div>`;
     }).join(''):`<div class="kanban-empty">${isComplete?'Nothing done yet':'Nothing here'}</div>`;
-    return`<div class="kanban-col${isComplete?' complete-col':''}">
+    return`<div class="kanban-col${isComplete?' complete-col':''}" data-status="${col.key}">
       <div class="kanban-col-header ${col.cls}">
         <span>${col.label}</span>
         <div style="display:flex;align-items:center;gap:6px">
@@ -1069,6 +1074,66 @@ function renderKanban(){
       <div class="kanban-cards">${cards}</div>
     </div>`;
   }).join('');
+  setupKanbanDragDrop('kanbanBoard', renderKanban);
+}
+
+// KANBAN DRAG & DROP
+let _dragId=null,_dragType=null,_wasDragging=false;
+function setupKanbanDragDrop(boardId, renderFn){
+  const board=document.getElementById(boardId);
+  if(!board)return;
+  // Cards — drag source
+  board.querySelectorAll('.kanban-card').forEach(card=>{
+    card.setAttribute('draggable','true');
+    card.addEventListener('dragstart',e=>{
+      _dragId=card.dataset.id;
+      _dragType=card.dataset.type;
+      _wasDragging=false;
+      e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('text/plain',_dragId);
+      setTimeout(()=>{card.classList.add('dragging');board.classList.add('is-dragging');},0);
+    });
+    card.addEventListener('dragend',()=>{
+      _wasDragging=true;
+      card.classList.remove('dragging');
+      board.classList.remove('is-dragging');
+      board.querySelectorAll('.kanban-cards').forEach(c=>c.classList.remove('drag-over'));
+      setTimeout(()=>{_wasDragging=false;},120);
+    });
+  });
+  // Columns — drop targets
+  board.querySelectorAll('.kanban-col:not(.collapsed)').forEach(col=>{
+    const status=col.dataset.status;
+    const cardsEl=col.querySelector('.kanban-cards');
+    col.addEventListener('dragover',e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      cardsEl?.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave',e=>{
+      if(!col.contains(e.relatedTarget)) cardsEl?.classList.remove('drag-over');
+    });
+    col.addEventListener('drop',async e=>{
+      e.preventDefault();
+      cardsEl?.classList.remove('drag-over');
+      if(!_dragId)return;
+      const id=_dragId,type=_dragType;
+      _dragId=null;_dragType=null;
+      const table=type==='todo'?'todos':'tasks';
+      const collection=type==='todo'?db.todos:db.tasks;
+      const item=collection.find(t=>t.id===id);
+      if(!item||item.status===status)return;
+      const prev=item.status;
+      item.status=status;
+      setSync('syncing');
+      try{
+        await api.patch(table,id,{status});
+        setSync('live');
+        saveUndo(async()=>{item.status=prev;await api.patch(table,id,{status:prev});});
+      }catch(err){item.status=prev;setSync('error');notify('Save failed',true);}
+      renderFn();
+    });
+  });
 }
 
 function toggleKanbanComplete(){
@@ -1105,7 +1170,7 @@ function renderTodoKanban(todos){
       const person=t.assigned_to?pById(t.assigned_to):null;
       const pod=t.podcast_id?podById(t.podcast_id):null;
       const od=t.due_date&&new Date(t.due_date)<today&&t.status!=='Complete';
-      return`<div class="kanban-card" onclick="openKpop('todo','${t.id}','')">
+      return`<div class="kanban-card" data-id="${t.id}" data-type="todo" onclick="if(!_wasDragging)openKpop('todo','${t.id}','')">
         <div class="kanban-card-title">${t.name}</div>
         <div class="kanban-card-meta">
           ${pod?`<span class="kanban-card-ep">${pod.name}</span>`:''}
@@ -1117,7 +1182,7 @@ function renderTodoKanban(todos){
         </div>
       </div>`;
     }).join(''):`<div class="kanban-empty">${isComplete?'Nothing done yet':'Nothing here'}</div>`;
-    return`<div class="kanban-col${isComplete?' complete-col':''}">
+    return`<div class="kanban-col${isComplete?' complete-col':''}" data-status="${col.key}">
       <div class="kanban-col-header ${col.cls}">
         <span>${col.label}</span>
         <div style="display:flex;align-items:center;gap:6px">
@@ -1128,6 +1193,10 @@ function renderTodoKanban(todos){
       <div class="kanban-cards">${cards}</div>
     </div>`;
   }).join('');
+  setupKanbanDragDrop('todoKanbanBoard', ()=>{
+    const todos=isAdmin?[...db.todos]:db.todos.filter(t=>t.assigned_to===loggedInUser?.id);
+    renderTodoKanban(todos);
+  });
 }
 
 function toggleTodoKanbanComplete(){
