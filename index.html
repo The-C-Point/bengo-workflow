@@ -248,6 +248,7 @@
     <nav class="nav">
       <div class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard"><span class="nav-icon">⬡</span> Dashboard</div>
       <div class="nav-item" onclick="navigate('companies')" id="nav-companies"><span class="nav-icon">🏢</span> Companies</div>
+      <div class="nav-item" onclick="navigate('contacts')" id="nav-contacts"><span class="nav-icon">👤</span> Contacts</div>
       <div class="nav-item" onclick="navigate('podcasts')" id="nav-podcasts"><span class="nav-icon">🎙</span> Podcasts</div>
       <div class="nav-item" onclick="navigate('tasks')" id="nav-tasks"><span class="nav-icon">✅</span> All Tasks</div>
       <div class="nav-item" onclick="navigate('mytasks')" id="nav-mytasks"><span class="nav-icon">👤</span> My Tasks</div>
@@ -276,6 +277,8 @@
       <div id="view-dashboard"></div>
       <div id="view-companies" class="hidden"></div>
       <div id="view-company" class="hidden"></div>
+      <div id="view-contacts" class="hidden"></div>
+      <div id="view-contact" class="hidden"></div>
       <div id="view-podcasts" class="hidden"></div>
 
       <div id="view-episodes" class="hidden">
@@ -821,18 +824,20 @@ async function writeTemplatesForType(type,tasks){
 
 function navigate(view,id){
   // Restrict non-admins from admin-only views
-  if(!isAdmin&&['podcasts','tasks','gantt','settings','companies'].includes(view)){view='mytasks';}
+  if(!isAdmin&&['podcasts','tasks','gantt','settings','companies','contacts'].includes(view)){view='mytasks';}
   currentView=view;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const nk=(view==='episodes'||view==='episode-tasks')?'podcasts':view==='companies'?'companies':view;
+  const nk=(view==='episodes'||view==='episode-tasks')?'podcasts':view==='company'?'companies':view==='contact'?'contacts':view;
   document.getElementById('nav-'+nk)?.classList.add('active');
   document.querySelectorAll('[id^="view-"]').forEach(v=>v.classList.add('hidden'));
   document.getElementById('view-'+view)?.classList.remove('hidden');
-  const titles={dashboard:'Dashboard',companies:'Companies',company:'Company',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',mytasks:'My Tasks',gantt:'Gantt',todos:'To-Do',settings:'Settings'};
+  const titles={dashboard:'Dashboard',companies:'Companies',company:'Company',contacts:'Contacts',contact:'Contact',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',mytasks:'My Tasks',gantt:'Gantt',todos:'To-Do',settings:'Settings'};
   document.getElementById('pageTitle').textContent=titles[view]||view;
   document.getElementById('topbarActions').innerHTML='';
   if(view==='companies'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewCompanyModal()">+ Add Company</button>';renderCompanies();}
   else if(view==='company'){if(id)renderCompanyDetail(id);}
+  else if(view==='contacts'){renderContacts();}
+  else if(view==='contact'){if(id)renderContactDetail(id);}
   else if(view==='podcasts'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewPodcastModal()">+ New Podcast</button>';renderPodcasts();}
   else if(view==='dashboard'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" id="sendRemindersBtn" onclick="sendUrgentReminders()">⏰ Send Reminders</button>';renderDashboard();}
   else if(view==='episodes'){if(id)currentPodcastId=id;renderEpisodes();}
@@ -2935,7 +2940,7 @@ function setupForUser(){
   document.getElementById('sidebarUser').style.display='flex';
   document.getElementById('sidebarAvatar').textContent=ini(loggedInUser.name);
   document.getElementById('sidebarUserName').textContent=loggedInUser.name;
-  const adminOnlyNav=['nav-companies','nav-podcasts','nav-tasks','nav-gantt','nav-settings'];
+  const adminOnlyNav=['nav-companies','nav-contacts','nav-podcasts','nav-tasks','nav-gantt','nav-settings'];
   if(!isAdmin){
     adminOnlyNav.forEach(id=>document.getElementById(id)?.classList.add('hidden'));
     currentUser=loggedInUser.id;
@@ -3024,7 +3029,10 @@ function coPodcasts(co){return db.podcasts.filter(p=>p.company&&p.company.toLowe
 
 function renderCompanies(){
   const el=document.getElementById('view-companies');
-  const q=(document.getElementById('searchCompanies')?.value||'').toLowerCase();
+  const prevSearch=document.getElementById('searchCompanies');
+  const wasFocused=document.activeElement===prevSearch;
+  const selPos=prevSearch?.selectionStart??0;
+  const q=(prevSearch?.value||'').toLowerCase();
 
   if(!db.companies.length){
     el.innerHTML=`<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">No companies yet</div><div class="empty-sub">Add your first client company to get started.</div><button class="btn" onclick="openNewCompanyModal()">+ Add Company</button></div>`;
@@ -3058,6 +3066,7 @@ function renderCompanies(){
   }).join('')}</div>
   ${orphans.length?`<div style="margin-top:28px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Podcasts not linked to a company record (${orphans.length})</div><div class="card-grid">${orphans.map(p=>`<div class="card" onclick="navigate('episodes','${p.id}')"><div class="card-label">${p.company||''}</div><div class="card-title">${p.name}</div><div class="card-meta"><span class="card-badge badge-${(p.type||'interview').toLowerCase()}">${p.type}</span></div></div>`).join('')}</div></div>`:''}`
   ;
+  if(wasFocused){const s=document.getElementById('searchCompanies');if(s){s.focus();s.setSelectionRange(selPos,selPos);}}
 }
 
 function renderCompanyDetail(id){
@@ -3120,6 +3129,86 @@ function renderCompanyDetail(id){
       <div class="crm-section-title">Podcasts</div>
       <div class="card-grid">${podCards}</div>
     </div>`;
+}
+
+function getAllContacts(){
+  const contacts=[];
+  for(const co of db.companies){
+    const add=(role,name,phone,email)=>{if(name||email)contacts.push({companyId:co.id,companyName:co.name,role,name:name||'',phone:phone||'',email:email||''});};
+    add('Main Contact',co.main_contact_name,co.main_contact_phone,co.main_contact_email);
+    add('Accounts',co.accounts_contact_name,co.accounts_contact_phone,co.accounts_contact_email);
+    add('Second Contact',co.second_contact_name,co.second_contact_phone,co.second_contact_email);
+    add('Third Contact',co.third_contact_name,co.third_contact_phone,co.third_contact_email);
+  }
+  return contacts.sort((a,b)=>(a.name||a.email).localeCompare(b.name||b.email));
+}
+
+function renderContacts(){
+  const el=document.getElementById('view-contacts');
+  const prevSearch=document.getElementById('searchContacts');
+  const wasFocused=document.activeElement===prevSearch;
+  const selPos=prevSearch?.selectionStart??0;
+  const q=(prevSearch?.value||'').toLowerCase();
+  const all=getAllContacts();
+  if(!all.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">👤</div><div class="empty-title">No contacts yet</div><div class="empty-sub">Add contacts via the Companies view.</div><button class="btn btn-ghost" onclick="navigate('companies')">Go to Companies</button></div>`;
+    return;
+  }
+  const filtered=q?all.filter(c=>c.name.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)||c.companyName.toLowerCase().includes(q)||c.role.toLowerCase().includes(q)):all;
+  el.innerHTML=`<div class="task-filters" style="margin-bottom:24px"><input class="search-input" type="text" id="searchContacts" placeholder="Search contacts, company or role…" oninput="renderContacts()" value="${q.replace(/"/g,'&quot;')}"></div>
+  <table class="template-table"><thead><tr><th>Name</th><th>Role</th><th>Company</th><th>Phone</th><th>Email</th><th></th></tr></thead><tbody>
+  ${filtered.map((c,i)=>`<tr>
+    <td style="font-weight:500">${c.name||'<span style="color:var(--text-muted);font-style:italic">—</span>'}</td>
+    <td><span style="font-size:11px;color:var(--text-muted)">${c.role}</span></td>
+    <td><span class="link-text" onclick="navigate('company','${c.companyId}')" style="color:var(--accent);cursor:pointer">${c.companyName}</span></td>
+    <td style="color:var(--text-muted)">${c.phone||'—'}</td>
+    <td>${c.email?`<a href="mailto:${c.email}" style="color:var(--accent)">${c.email}</a>`:'—'}</td>
+    <td style="white-space:nowrap"><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px;margin-right:4px" onclick="navigate('contact','${c.companyId}:${c.role.replace(/ /g,'_')}')">View</button><button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" onclick="navigate('company','${c.companyId}')">Company →</button></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+  if(wasFocused){const s=document.getElementById('searchContacts');if(s){s.focus();s.setSelectionRange(selPos,selPos);}}
+}
+
+function renderContactDetail(idKey){
+  const[companyId,roleKey]=idKey.split(':');
+  const role=roleKey.replace(/_/g,' ');
+  const co=coById(companyId);
+  if(!co){navigate('contacts');return;}
+  const fieldMap={
+    'Main Contact':{name:co.main_contact_name,phone:co.main_contact_phone,email:co.main_contact_email},
+    'Accounts':{name:co.accounts_contact_name,phone:co.accounts_contact_phone,email:co.accounts_contact_email},
+    'Second Contact':{name:co.second_contact_name,phone:co.second_contact_phone,email:co.second_contact_email},
+    'Third Contact':{name:co.third_contact_name,phone:co.third_contact_phone,email:co.third_contact_email}
+  };
+  const c=fieldMap[role]||{};
+  document.getElementById('pageTitle').textContent=c.name||role;
+  document.getElementById('topbarActions').innerHTML=`
+    <button class="btn btn-ghost" onclick="navigate('contacts')" style="margin-right:8px">← All Contacts</button>
+    <button class="btn" onclick="navigate('company','${co.id}')">🏢 ${co.name}</button>`;
+  const el=document.getElementById('view-contact');
+  const field=(label,val,link)=>val
+    ?`<div class="crm-field"><div class="crm-label">${label}</div><div class="crm-value">${link||val}</div></div>`
+    :`<div class="crm-field"><div class="crm-label">${label}</div><div class="crm-value empty">—</div></div>`;
+  el.innerHTML=`<div style="max-width:560px">
+    <div class="crm-section">
+      <div class="crm-section-title">Contact Details</div>
+      <div class="crm-grid">
+        ${field('Name',c.name)}
+        ${field('Role at Company',role)}
+        ${field('Phone',c.phone)}
+        ${field('Email',c.email,c.email?`<a href="mailto:${c.email}" style="color:var(--accent)">${c.email}</a>`:null)}
+      </div>
+    </div>
+    <div class="crm-section">
+      <div class="crm-section-title">Company</div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0">
+        <div style="font-size:15px;font-weight:600">${co.name}</div>
+        ${co.registration_number?`<div style="font-size:12px;color:var(--text-muted)">Reg: ${co.registration_number}</div>`:''}
+        ${co.vat_number?`<div style="font-size:12px;color:var(--text-muted)">VAT: ${co.vat_number}</div>`:''}
+      </div>
+      <button class="btn btn-ghost" onclick="navigate('company','${co.id}')">View full company record →</button>
+    </div>
+  </div>`;
 }
 
 let editingCompanyId=null;
