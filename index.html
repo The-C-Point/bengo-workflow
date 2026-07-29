@@ -173,6 +173,19 @@
   .kanban-card.dragging{opacity:0.35;transform:scale(0.97);}
   .kanban-cards.drag-over{background:rgba(212,175,55,0.08);outline:2px dashed var(--accent);outline-offset:-4px;border-radius:6px;}
   .kanban-board.is-dragging .kanban-card{pointer-events:none;}
+  .settings-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px;}
+  .settings-tab{padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;}
+  .settings-tab:hover{color:var(--text);}
+  .settings-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .settings-content{padding-top:4px;}
+  .template-table{width:100%;border-collapse:collapse;}
+  .template-table th{text-align:left;padding:8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);border-bottom:1px solid var(--border);}
+  .template-table td{padding:9px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top;}
+  .template-table tbody tr:last-child td{border-bottom:none;}
+  .template-type-header{padding:10px 12px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;background:var(--surface2);color:var(--text-muted);}
+  .podcast-type-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;}
+  .podcast-type-name{font-size:15px;font-weight:600;margin-bottom:4px;}
+  .podcast-type-meta{font-size:12px;color:var(--text-muted);}
   .view-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-left:auto;}
   .view-toggle-btn{background:transparent;border:none;color:var(--text-muted);padding:6px 14px;cursor:pointer;font-family:'Varela Round',sans-serif;font-size:12px;transition:all .15s;}
   .view-toggle-btn.active{background:var(--accent);color:#1a1400;font-weight:600;}
@@ -225,7 +238,7 @@
       <div class="nav-item" onclick="navigate('mytasks')" id="nav-mytasks"><span class="nav-icon">👤</span> My Tasks</div>
       <div class="nav-item" onclick="navigate('gantt')" id="nav-gantt"><span class="nav-icon">📊</span> Gantt</div>
       <div class="nav-item" onclick="navigate('todos')" id="nav-todos"><span class="nav-icon">📝</span> To-Do</div>
-      <div class="nav-item" onclick="navigate('people')" id="nav-people"><span class="nav-icon">👥</span> People</div>
+      <div class="nav-item" onclick="navigate('settings')" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</div>
     </nav>
     <div class="user-switcher">
       <div class="user-label">Viewing as</div>
@@ -331,7 +344,14 @@
           <div class="kanban-scroll"><div class="kanban-board" id="todoKanbanBoard"></div></div>
         </div>
       </div>
-      <div id="view-people" class="hidden"><div class="people-grid" id="peopleGrid"></div><div id="emailConfigSection" style="margin-top:32px"></div></div>
+      <div id="view-settings" class="hidden">
+        <div class="settings-tabs">
+          <div class="settings-tab active" id="stab-users" onclick="renderSettingsTab('users')">Users</div>
+          <div class="settings-tab" id="stab-templates" onclick="renderSettingsTab('templates')">Task Templates</div>
+          <div class="settings-tab" id="stab-types" onclick="renderSettingsTab('types')">Podcast Types</div>
+        </div>
+        <div class="settings-content" id="settingsContent"></div>
+      </div>
     </div>
   </main>
 </div>
@@ -651,14 +671,14 @@ async function loadAll(){
 
 function navigate(view,id){
   // Restrict non-admins from admin-only views
-  if(!isAdmin&&['podcasts','tasks','gantt','people','companies'].includes(view)){view='mytasks';}
+  if(!isAdmin&&['podcasts','tasks','gantt','settings','companies'].includes(view)){view='mytasks';}
   currentView=view;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const nk=(view==='episodes'||view==='episode-tasks')?'podcasts':view==='companies'?'companies':view;
   document.getElementById('nav-'+nk)?.classList.add('active');
   document.querySelectorAll('[id^="view-"]').forEach(v=>v.classList.add('hidden'));
   document.getElementById('view-'+view)?.classList.remove('hidden');
-  const titles={dashboard:'Dashboard',companies:'Companies',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',mytasks:'My Tasks',gantt:'Gantt',todos:'To-Do',people:'People'};
+  const titles={dashboard:'Dashboard',companies:'Companies',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',mytasks:'My Tasks',gantt:'Gantt',todos:'To-Do',settings:'Settings'};
   document.getElementById('pageTitle').textContent=titles[view]||view;
   document.getElementById('topbarActions').innerHTML='';
   if(view==='companies'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewPodcastModal()">+ New Podcast</button>';renderCompanies();}
@@ -670,7 +690,7 @@ function navigate(view,id){
   else if(view==='mytasks')renderMyTasks();
   else if(view==='gantt'){populateGanttFilter();renderGantt();}
   else if(view==='todos'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" onclick="openImportTodosModal()" style="margin-right:8px">↑ Import</button><button class="btn" onclick="openNewTodoModal()">+ New To-Do</button>';populateTodoFilters();renderTodos();}
-  else if(view==='people'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewPersonModal()">+ Add Person</button>';renderPeople();renderEmailConfig();}
+  else if(view==='settings'){document.getElementById('topbarActions').innerHTML='';renderSettings();}
 }
 
 function renderDashboard(){
@@ -1296,6 +1316,70 @@ function renderMyTasks(){
 
 function renderPeople(){
   document.getElementById('peopleGrid').innerHTML=db.people.map(p=>`<div class="person-card"><div class="person-actions"><div class="icon-btn" onclick="openEditPersonModal('${p.id}')">✏️</div><div class="icon-btn danger" onclick="deletePerson('${p.id}')">🗑</div></div><div class="person-avatar">${ini(p.name)}</div><div><div class="person-name">${p.name} ${p.user_role==='Admin'?'<span class="admin-badge">Admin</span>':''}</div><div class="person-role">${p.role}</div><div class="person-email">${p.email||''}</div></div></div>`).join('');
+}
+
+let _settingsTab='users';
+function renderSettings(){_settingsTab='users';renderSettingsTab('users');}
+function renderSettingsTab(tab){
+  _settingsTab=tab;
+  document.querySelectorAll('.settings-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('stab-'+tab)?.classList.add('active');
+  if(tab==='users')renderSettingsUsers();
+  else if(tab==='templates')renderSettingsTemplates();
+  else if(tab==='types')renderSettingsPodcastTypes();
+}
+
+function renderSettingsUsers(){
+  const content=document.getElementById('settingsContent');
+  content.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--text-muted)">${db.people.length} team member${db.people.length!==1?'s':''}</div>
+      <button class="btn" onclick="openNewPersonModal()">+ Add Person</button>
+    </div>
+    <div class="people-grid" id="peopleGrid"></div>
+    <div id="emailConfigSection" style="margin-top:32px"></div>`;
+  renderPeople();
+  renderEmailConfig();
+}
+
+function renderSettingsTemplates(){
+  const types=Object.keys(TEMPLATES);
+  let html='<div style="overflow-x:auto">';
+  html+=`<table class="template-table"><thead><tr><th>ID</th><th>Task Name</th><th>Role</th><th>Order</th><th>Days Before Launch</th><th>Notes</th></tr></thead><tbody>`;
+  for(const type of types){
+    const tasks=TEMPLATES[type];
+    html+=`<tr><td colspan="6" class="template-type-header">${type} — ${tasks.length} task${tasks.length!==1?'s':''}</td></tr>`;
+    for(const t of tasks){
+      html+=`<tr><td style="font-family:monospace;color:var(--text-muted)">${t.id}</td><td>${t.name}</td><td>${t.role}</td><td style="color:var(--text-muted)">${t.order}</td><td>${t.days}</td><td style="color:var(--text-muted);font-size:12px">${t.series?'Series (episode 1 only)':''}</td></tr>`;
+    }
+  }
+  html+='</tbody></table></div>';
+  html+=`<div style="margin-top:16px;padding:12px 16px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text-muted)">Task templates are currently defined in code. CSV import to override per-podcast coming in a future update.</div>`;
+  document.getElementById('settingsContent').innerHTML=html;
+}
+
+function renderSettingsPodcastTypes(){
+  const typeDescriptions={
+    Interview:'Guest interview format. Standard 15-task workflow from booking through invoice.',
+    Solo:'Single host, no guest booking required. 15 tasks.',
+    Panel:'Multiple hosts or guests. 15 tasks.',
+    Scripted:'Scripted narrative format. Adds a script finalisation step. 15 tasks.',
+    'Full Production':'End-to-end production — 8 phases from Discovery to Launch. Series-level tasks (phases 1, 2, 5, 6, 7) on episode 1 only; per-episode tasks (phases 3, 4, 8) on every episode.'
+  };
+  const html=Object.keys(TEMPLATES).map(type=>{
+    const tasks=TEMPLATES[type];
+    const seriesCount=tasks.filter(t=>t.series).length;
+    const epCount=tasks.filter(t=>!t.series).length;
+    const meta=type==='Full Production'
+      ?`${tasks.length} tasks · ${seriesCount} series-level · ${epCount} per-episode`
+      :`${tasks.length} tasks`;
+    return`<div class="podcast-type-card">
+      <div class="podcast-type-name">${type}</div>
+      <div class="podcast-type-meta" style="margin-bottom:8px">${meta}</div>
+      <div style="font-size:13px;color:var(--text-muted)">${typeDescriptions[type]||''}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('settingsContent').innerHTML=html;
 }
 
 async function deletePerson(id){
@@ -2401,7 +2485,7 @@ function setupForUser(){
   document.getElementById('sidebarUser').style.display='flex';
   document.getElementById('sidebarAvatar').textContent=ini(loggedInUser.name);
   document.getElementById('sidebarUserName').textContent=loggedInUser.name;
-  const adminOnlyNav=['nav-companies','nav-podcasts','nav-tasks','nav-gantt','nav-people'];
+  const adminOnlyNav=['nav-companies','nav-podcasts','nav-tasks','nav-gantt','nav-settings'];
   if(!isAdmin){
     adminOnlyNav.forEach(id=>document.getElementById(id)?.classList.add('hidden'));
     currentUser=loggedInUser.id;
