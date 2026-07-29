@@ -68,7 +68,21 @@ You can paste a **Google Drive folder link** when creating a podcast (or add it 
 
 ## Companies
 
-The **Companies** view (top of the sidebar) groups all podcasts by client company. Active clients appear first. Use the search bar to find a company or podcast quickly.
+The **Companies** view is your client CRM. Each company card shows the main contact and links through to the full company record.
+
+**Adding a company** — click **+ Add Company** and fill in:
+- Company name, registration number, VAT number
+- Billing address and correspondence address (tick "Same as billing" if they match)
+- Main contact (name, phone, email)
+- Accounts / Finance contact
+- Second and third contacts
+- Any notes
+
+**Company detail** — click a company card to open the full record. From here you can also add a podcast directly — it pre-fills the company name automatically.
+
+**Deleting a company** is blocked if any podcasts are linked to it. Unlink or delete the podcasts first.
+
+Podcasts that were created before the CRM was set up (with a company name typed freehand) appear in an "unlinked" section at the bottom until a matching company record is added.
 
 ---
 

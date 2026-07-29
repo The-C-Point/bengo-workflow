@@ -18,6 +18,7 @@ Internal workflow tool for **Bengo Media** (Dream Together Limited). Manages pod
 - **My Tasks** — per-person view of open episode tasks and to-dos
 - **To-Do** — freestanding tasks (not tied to an episode); table and Kanban views; CSV import
 - **Gantt chart** — canvas-based, zoomable, grouped by podcast; shows episode bars and task dots
+- **Companies** — full CRM view: company cards with registration number, VAT, addresses, up to four contacts (main, accounts, second, third), notes; company detail view with linked podcasts; add podcast pre-fills company name
 - **Settings** (admin only) — four tabs: **Users** (team member management), **Roles** (add custom roles e.g. Marketing Assistant), **Task Templates** (view, add, edit, delete, export and import per type via CSV), **Podcast Types** (descriptions, add custom types)
 - **Dashboard** — overdue count, overall completion %, team capacity, podcast progress, open task list
 - **Email notifications** — via Resend; episode team notify and urgent (3-day) reminders
@@ -120,6 +121,10 @@ See CLAUDE.md for full schema.
 - Added **Per-view search** — filter-as-you-type on All Tasks, My Tasks, To-Dos, and Companies; searches name, podcast, company, notes, assignee
 - Added **Undo (Oh Crap button)** — fixed bottom-left button; undoes last status cycle, bulk update, or Kanban quick-edit; auto-hides after 12 seconds
 - Added **Google Drive folder link** — URL field on podcast modal; 📁 icon on podcast cards; auto-creates "Set up Google Drive production folder" to-do on new podcast (pre-completed if URL provided); auto-completes that to-do when URL is added on edit
+
+### 29 July 2026 (continued)
+- Rebuilt **Companies view as CRM** — company cards with reg number, VAT, billing + correspondence addresses, main/accounts/second/third contacts; company detail page; delete blocked if podcasts linked; add podcast from company pre-fills name and contact; orphan podcasts (no matching company record) shown in a separate section
+- New `companies` Supabase table required (see SQL below)
 
 ### 29 July 2026
 - Added **Settings area** (admin only) — replaces the People nav item; three tabs: Users, Task Templates, Podcast Types

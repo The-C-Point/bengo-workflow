@@ -173,6 +173,21 @@
   .kanban-card.dragging{opacity:0.35;transform:scale(0.97);}
   .kanban-cards.drag-over{background:rgba(212,175,55,0.08);outline:2px dashed var(--accent);outline-offset:-4px;border-radius:6px;}
   .kanban-board.is-dragging .kanban-card{pointer-events:none;}
+  .company-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;}
+  .company-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;cursor:pointer;transition:border-color .15s;position:relative;}
+  .company-card:hover{border-color:var(--accent);}
+  .company-card-name{font-size:16px;font-weight:600;margin-bottom:2px;}
+  .company-card-sub{font-size:11px;color:var(--text-muted);margin-bottom:10px;}
+  .company-card-contact{font-size:13px;color:var(--text);margin-bottom:2px;}
+  .company-card-actions{position:absolute;top:14px;right:14px;display:flex;gap:4px;opacity:0;transition:opacity .15s;}
+  .company-card:hover .company-card-actions{opacity:1;}
+  .crm-section{margin-bottom:28px;}
+  .crm-section-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+  .crm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px 28px;}
+  .crm-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+  .crm-value{font-size:13px;line-height:1.5;white-space:pre-line;}
+  .crm-value.empty{color:var(--text-muted);font-style:italic;}
+  .form-section-divider{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600;margin:20px 0 12px;padding-top:16px;border-top:1px solid var(--border);}
   .settings-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px;}
   .settings-tab{padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;}
   .settings-tab:hover{color:var(--text);}
@@ -260,6 +275,7 @@
     <div class="content">
       <div id="view-dashboard"></div>
       <div id="view-companies" class="hidden"></div>
+      <div id="view-company" class="hidden"></div>
       <div id="view-podcasts" class="hidden"></div>
 
       <div id="view-episodes" class="hidden">
@@ -497,6 +513,54 @@
     </div>
   </div>
 
+  <div class="modal hidden" id="modalCompany" style="max-width:660px;max-height:88vh;overflow-y:auto">
+    <div class="modal-title" id="companyModalTitle">Add Company</div>
+
+    <div class="form-group"><label>Company Name *</label><input type="text" id="f-coName" placeholder="e.g. Acme Productions Ltd"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Company Registration Number</label><input type="text" id="f-coReg" placeholder="e.g. 12345678"></div>
+      <div class="form-group"><label>VAT Number</label><input type="text" id="f-coVat" placeholder="e.g. GB123456789"></div>
+    </div>
+
+    <div class="form-section-divider">Addresses</div>
+    <div class="form-group"><label>Billing Address</label><textarea id="f-coBilling" rows="3" placeholder="Street&#10;City&#10;Postcode"></textarea></div>
+    <div class="form-group" style="margin-bottom:8px"><label style="display:flex;align-items:center;gap:8px;font-weight:normal;cursor:pointer"><input type="checkbox" id="f-coSameAddr" onchange="toggleCoAddr()" style="accent-color:var(--accent)"> Same as billing address</label></div>
+    <div class="form-group" id="f-coCorrespGroup"><label>Correspondence Address</label><textarea id="f-coCorresp" rows="3" placeholder="Street&#10;City&#10;Postcode"></textarea></div>
+
+    <div class="form-section-divider">Main Contact</div>
+    <div class="form-row">
+      <div class="form-group"><label>Name</label><input type="text" id="f-coM1Name" placeholder="Full name"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="f-coM1Phone" placeholder="e.g. 07700 900000"></div>
+    </div>
+    <div class="form-group"><label>Email</label><input type="email" id="f-coM1Email" placeholder="name@company.com"></div>
+
+    <div class="form-section-divider">Accounts / Finance Contact</div>
+    <div class="form-row">
+      <div class="form-group"><label>Name</label><input type="text" id="f-coAccName" placeholder="Full name"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="f-coAccPhone" placeholder="e.g. 07700 900000"></div>
+    </div>
+    <div class="form-group"><label>Email</label><input type="email" id="f-coAccEmail" placeholder="name@company.com"></div>
+
+    <div class="form-section-divider">Second Contact</div>
+    <div class="form-row">
+      <div class="form-group"><label>Name</label><input type="text" id="f-co2Name" placeholder="Full name"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="f-co2Phone" placeholder="e.g. 07700 900000"></div>
+    </div>
+    <div class="form-group"><label>Email</label><input type="email" id="f-co2Email" placeholder="name@company.com"></div>
+
+    <div class="form-section-divider">Third Contact</div>
+    <div class="form-row">
+      <div class="form-group"><label>Name</label><input type="text" id="f-co3Name" placeholder="Full name"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="f-co3Phone" placeholder="e.g. 07700 900000"></div>
+    </div>
+    <div class="form-group"><label>Email</label><input type="email" id="f-co3Email" placeholder="name@company.com"></div>
+
+    <div class="form-section-divider">Notes</div>
+    <div class="form-group"><textarea id="f-coNotes" rows="3" placeholder="Any additional notes about this company…"></textarea></div>
+
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="saveCompanyBtn" onclick="saveCompany()">Save Company</button></div>
+  </div>
+
   <div class="modal hidden" id="modalTemplateTask" style="max-width:520px">
     <div class="modal-title" id="ttModalTitle">Add Task</div>
     <div class="form-group"><label>Task ID <span style="font-weight:normal;color:var(--text-muted)">(leave blank to auto-generate)</span></label><input type="text" id="f-ttId" placeholder="e.g. TT-0010" style="font-family:monospace"></div>
@@ -663,7 +727,7 @@ const TEMPLATES={
   ]
 };
 
-let db={people:[],podcasts:[],episodes:[],tasks:[],todos:[],taskTemplates:[]};
+let db={people:[],podcasts:[],episodes:[],tasks:[],todos:[],taskTemplates:[],companies:[]};
 let currentView='dashboard',currentPodcastId=null,currentEpisodeId=null,editingPersonId=null,editingTaskId=null,currentUser='all';
 let ganttDayWidth=28,ganttExpanded={};
 let loggedInUser=null,isAdmin=false;
@@ -689,13 +753,14 @@ function setSync(s){const el=document.getElementById('syncIndicator');if(s==='sy
 function notify(msg,err){const el=document.createElement('div');el.className='notify'+(err?' err':'');el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);}
 
 async function loadAll(){
-  const[people,podcasts,episodes,tasks,todos,taskTemplates]=await Promise.all([
+  const[people,podcasts,episodes,tasks,todos,taskTemplates,companies]=await Promise.all([
     api.get('people','order=name'),api.get('podcasts','order=created_at'),api.get('episodes','order=number'),
     api.get('tasks','order=task_order'),api.get('todos','order=due_date'),
-    api.get('task_templates','order=task_order').catch(()=>null)
+    api.get('task_templates','order=task_order').catch(()=>null),
+    api.get('companies','order=name').catch(()=>null)
   ]);
   db.people=people||[];db.podcasts=podcasts||[];db.episodes=episodes||[];db.tasks=tasks||[];db.todos=todos||[];
-  db.taskTemplates=taskTemplates||[];
+  db.taskTemplates=taskTemplates||[];db.companies=companies||[];
 }
 
 const BUILT_IN_TASK_ROLES=['Executive Producer','Producer','Editor','Marketer','Accounts'];
@@ -763,10 +828,11 @@ function navigate(view,id){
   document.getElementById('nav-'+nk)?.classList.add('active');
   document.querySelectorAll('[id^="view-"]').forEach(v=>v.classList.add('hidden'));
   document.getElementById('view-'+view)?.classList.remove('hidden');
-  const titles={dashboard:'Dashboard',companies:'Companies',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',mytasks:'My Tasks',gantt:'Gantt',todos:'To-Do',settings:'Settings'};
+  const titles={dashboard:'Dashboard',companies:'Companies',company:'Company',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',mytasks:'My Tasks',gantt:'Gantt',todos:'To-Do',settings:'Settings'};
   document.getElementById('pageTitle').textContent=titles[view]||view;
   document.getElementById('topbarActions').innerHTML='';
-  if(view==='companies'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewPodcastModal()">+ New Podcast</button>';renderCompanies();}
+  if(view==='companies'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewCompanyModal()">+ Add Company</button>';renderCompanies();}
+  else if(view==='company'){if(id)renderCompanyDetail(id);}
   else if(view==='podcasts'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewPodcastModal()">+ New Podcast</button>';renderPodcasts();}
   else if(view==='dashboard'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" id="sendRemindersBtn" onclick="sendUrgentReminders()">⏰ Send Reminders</button>';renderDashboard();}
   else if(view==='episodes'){if(id)currentPodcastId=id;renderEpisodes();}
@@ -2951,38 +3017,221 @@ async function saveKpop(){
 }
 
 // ============================================================
-// COMPANY VIEW
+// COMPANY CRM VIEW
 // ============================================================
+function coById(id){return db.companies.find(c=>c.id===id);}
+function coPodcasts(co){return db.podcasts.filter(p=>p.company&&p.company.toLowerCase()===co.name.toLowerCase());}
+
 function renderCompanies(){
   const el=document.getElementById('view-companies');
   const q=(document.getElementById('searchCompanies')?.value||'').toLowerCase();
-  if(!db.podcasts.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">No companies yet</div><div class="empty-sub">Add a podcast to get started.</div></div>`;return;}
-  const companies={};
-  for(const p of db.podcasts){const co=p.company||'Uncategorised';if(!companies[co])companies[co]=[];companies[co].push(p);}
-  const sortedCos=Object.keys(companies).sort((a,b)=>{
-    const aAct=companies[a].some(p=>{const pp=podcastProgress(p.id);return pp===null||pp<100;});
-    const bAct=companies[b].some(p=>{const pp=podcastProgress(p.id);return pp===null||pp<100;});
-    if(aAct&&!bAct)return -1;if(!aAct&&bAct)return 1;return a.localeCompare(b);
-  }).filter(co=>!q||co.toLowerCase().includes(q)||companies[co].some(p=>p.name.toLowerCase().includes(q)));
-  el.innerHTML=`<div class="task-filters" style="margin-bottom:24px"><input class="search-input" type="text" id="searchCompanies" placeholder="Search companies or podcasts…" oninput="renderCompanies()" value="${q.replace(/"/g,'&quot;')}"></div>`
-  +sortedCos.map(co=>{
-    const pods=companies[co];
-    const isAct=pods.some(p=>{const pp=podcastProgress(p.id);return pp===null||pp<100;});
-    const cards=pods.map(p=>{
-      const ec=db.episodes.filter(e=>e.podcast_id===p.id).length;
-      const pct=podcastProgress(p.id)??0;
-      const color=pct===100?'var(--complete-text)':pct>50?'var(--accent)':'var(--accent2)';
-      const folderBtn=p.google_folder_url?`<a href="${p.google_folder_url}" target="_blank" onclick="event.stopPropagation()" title="Open Google Drive folder" style="color:var(--accent);font-size:13px;text-decoration:none">📁</a>`:'';
-      return`<div class="card" onclick="navigate('episodes','${p.id}')">
-        <div class="card-actions"><div class="icon-btn" onclick="event.stopPropagation();openEditPodcastModal('${p.id}')">✏️</div></div>
-        <div class="card-label">${p.contact||''} ${folderBtn}</div>
-        <div class="card-title">${p.name}</div>
-        <div class="card-meta"><span class="card-badge badge-${(p.type||'interview').toLowerCase()}">${p.type}</span><br>${ec} episode${ec!==1?'s':''} · Season ${p.season}</div>
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:var(--text-muted)">Tasks</span><span style="font-size:11px;font-weight:600;color:${color}">${pct}%</span></div><div class="progress-bar" style="width:100%"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div></div>
-      </div>`;
-    }).join('');
-    return`<div class="company-section"><div class="company-header"><div class="company-name">${co}</div><span class="company-badge ${isAct?'active':'done'}">${isAct?'Active':'Complete'}</span><span style="font-size:12px;color:var(--text-muted)">${pods.length} podcast${pods.length!==1?'s':''}</span></div><div class="card-grid">${cards}</div></div>`;
-  }).join('');
+
+  if(!db.companies.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🏢</div><div class="empty-title">No companies yet</div><div class="empty-sub">Add your first client company to get started.</div><button class="btn" onclick="openNewCompanyModal()">+ Add Company</button></div>`;
+    return;
+  }
+
+  let cos=db.companies.filter(c=>!q||c.name.toLowerCase().includes(q)||(c.main_contact_name||'').toLowerCase().includes(q)||(c.main_contact_email||'').toLowerCase().includes(q));
+  cos=[...cos].sort((a,b)=>a.name.localeCompare(b.name));
+
+  // Orphan podcasts (company text doesn't match any company record)
+  const linkedNames=new Set(db.companies.map(c=>c.name.toLowerCase()));
+  const orphans=db.podcasts.filter(p=>(p.company||'')&&!linkedNames.has((p.company||'').toLowerCase()));
+
+  el.innerHTML=`<div class="task-filters" style="margin-bottom:24px"><input class="search-input" type="text" id="searchCompanies" placeholder="Search companies or contacts…" oninput="renderCompanies()" value="${q.replace(/"/g,'&quot;')}"></div>
+  <div class="company-grid">${cos.map(co=>{
+    const pods=coPodcasts(co);
+    const hasActive=pods.some(p=>{const pp=podcastProgress(p.id);return pp===null||pp<100;});
+    const badge=pods.length?`<span class="company-badge ${hasActive?'active':'done'}" style="font-size:11px;padding:2px 8px">${hasActive?'Active':'Complete'}</span>`:'<span style="font-size:11px;color:var(--text-muted)">No podcasts</span>';
+    return`<div class="company-card" onclick="navigate('company','${co.id}')">
+      <div class="company-card-actions">
+        <div class="icon-btn" onclick="event.stopPropagation();openEditCompanyModal('${co.id}')">✏️</div>
+        <div class="icon-btn danger" onclick="event.stopPropagation();deleteCompany('${co.id}')">🗑</div>
+      </div>
+      <div class="company-card-name">${co.name}</div>
+      <div class="company-card-sub">${[co.registration_number?'Reg: '+co.registration_number:'',co.vat_number?'VAT: '+co.vat_number:''].filter(Boolean).join(' · ')||'&nbsp;'}</div>
+      ${co.main_contact_name?`<div class="company-card-contact">👤 ${co.main_contact_name}</div>`:''}
+      ${co.main_contact_email?`<div class="company-card-contact" style="color:var(--text-muted);font-size:12px">✉ ${co.main_contact_email}</div>`:''}
+      ${co.main_contact_phone?`<div class="company-card-contact" style="color:var(--text-muted);font-size:12px">📞 ${co.main_contact_phone}</div>`:''}
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px">${badge}${pods.length?`<span style="font-size:11px;color:var(--text-muted)">${pods.length} podcast${pods.length!==1?'s':''}</span>`:''}</div>
+    </div>`;
+  }).join('')}</div>
+  ${orphans.length?`<div style="margin-top:28px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Podcasts not linked to a company record (${orphans.length})</div><div class="card-grid">${orphans.map(p=>`<div class="card" onclick="navigate('episodes','${p.id}')"><div class="card-label">${p.company||''}</div><div class="card-title">${p.name}</div><div class="card-meta"><span class="card-badge badge-${(p.type||'interview').toLowerCase()}">${p.type}</span></div></div>`).join('')}</div></div>`:''}`
+  ;
+}
+
+function renderCompanyDetail(id){
+  const co=coById(id);
+  if(!co){navigate('companies');return;}
+  const pods=coPodcasts(co);
+  document.getElementById('pageTitle').textContent=co.name;
+  document.getElementById('topbarActions').innerHTML=`
+    <button class="btn btn-ghost" onclick="navigate('companies')" style="margin-right:8px">← All Companies</button>
+    <button class="btn btn-ghost" onclick="openNewPodcastModalForCompany('${co.id}')" style="margin-right:8px">+ Add Podcast</button>
+    <button class="btn" onclick="openEditCompanyModal('${co.id}')">✏️ Edit</button>`;
+
+  const crm=(label,val)=>val
+    ?`<div class="crm-field"><div class="crm-label">${label}</div><div class="crm-value">${val}</div></div>`
+    :`<div class="crm-field"><div class="crm-label">${label}</div><div class="crm-value empty">—</div></div>`;
+
+  const contactBlock=(title,name,phone,email)=>(name||phone||email)?`
+    <div class="crm-section">
+      <div class="crm-section-title">${title}</div>
+      <div class="crm-grid">
+        ${crm('Name',name)}${crm('Phone',phone)}${crm('Email',email?`<a href="mailto:${email}" style="color:var(--accent)">${email}</a>`:'')}
+      </div>
+    </div>`:'' ;
+
+  const podCards=pods.length?pods.map(p=>{
+    const ec=db.episodes.filter(e=>e.podcast_id===p.id).length;
+    const pct=podcastProgress(p.id)??0;
+    const color=pct===100?'var(--complete-text)':pct>50?'var(--accent)':'var(--accent2)';
+    const folderBtn=p.google_folder_url?`<a href="${p.google_folder_url}" target="_blank" onclick="event.stopPropagation()" title="Open Google Drive folder" style="color:var(--accent);font-size:13px;text-decoration:none;margin-left:6px">📁</a>`:'';
+    return`<div class="card" onclick="navigate('episodes','${p.id}')">
+      <div class="card-actions"><div class="icon-btn" onclick="event.stopPropagation();openEditPodcastModal('${p.id}')">✏️</div><div class="icon-btn" onclick="event.stopPropagation();openBatchEpisodesModal('${p.id}')" title="Add batch">➕</div><div class="icon-btn danger" onclick="event.stopPropagation();deletePodcast('${p.id}')">🗑</div></div>
+      <div class="card-label">${p.contact||''}${folderBtn}</div>
+      <div class="card-title">${p.name}</div>
+      <div class="card-meta"><span class="card-badge badge-${(p.type||'interview').toLowerCase()}">${p.type}</span><br>${ec} episode${ec!==1?'s':''} · Season ${p.season}</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:var(--text-muted)">Tasks</span><span style="font-size:11px;font-weight:600;color:${color}">${pct}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div></div>
+    </div>`;
+  }).join(''):`<p style="color:var(--text-muted);font-size:13px">No podcasts linked yet. <button class="btn btn-ghost btn-sm" onclick="openNewPodcastModalForCompany('${co.id}')">+ Add Podcast</button></p>`;
+
+  document.getElementById('view-company').innerHTML=`
+    <div class="crm-section">
+      <div class="crm-section-title">Company Details</div>
+      <div class="crm-grid">
+        ${crm('Registration Number',co.registration_number)}
+        ${crm('VAT Number',co.vat_number)}
+      </div>
+    </div>
+    <div class="crm-section">
+      <div class="crm-section-title">Addresses</div>
+      <div class="crm-grid">
+        ${crm('Billing Address',co.billing_address)}
+        ${co.same_address?crm('Correspondence Address','Same as billing'):crm('Correspondence Address',co.correspondence_address)}
+      </div>
+    </div>
+    ${contactBlock('Main Contact',co.main_contact_name,co.main_contact_phone,co.main_contact_email)}
+    ${contactBlock('Accounts / Finance Contact',co.accounts_contact_name,co.accounts_contact_phone,co.accounts_contact_email)}
+    ${contactBlock('Second Contact',co.second_contact_name,co.second_contact_phone,co.second_contact_email)}
+    ${contactBlock('Third Contact',co.third_contact_name,co.third_contact_phone,co.third_contact_email)}
+    ${co.notes?`<div class="crm-section"><div class="crm-section-title">Notes</div><div class="crm-value" style="white-space:pre-line">${co.notes}</div></div>`:''}
+    <div class="crm-section">
+      <div class="crm-section-title">Podcasts</div>
+      <div class="card-grid">${podCards}</div>
+    </div>`;
+}
+
+let editingCompanyId=null;
+
+function toggleCoAddr(){
+  const same=document.getElementById('f-coSameAddr').checked;
+  document.getElementById('f-coCorrespGroup').style.display=same?'none':'';
+}
+
+function _coFormVals(){
+  return{
+    name:document.getElementById('f-coName').value.trim(),
+    registration_number:document.getElementById('f-coReg').value.trim()||null,
+    vat_number:document.getElementById('f-coVat').value.trim()||null,
+    billing_address:document.getElementById('f-coBilling').value.trim()||null,
+    same_address:document.getElementById('f-coSameAddr').checked,
+    correspondence_address:document.getElementById('f-coSameAddr').checked?null:document.getElementById('f-coCorresp').value.trim()||null,
+    main_contact_name:document.getElementById('f-coM1Name').value.trim()||null,
+    main_contact_phone:document.getElementById('f-coM1Phone').value.trim()||null,
+    main_contact_email:document.getElementById('f-coM1Email').value.trim()||null,
+    accounts_contact_name:document.getElementById('f-coAccName').value.trim()||null,
+    accounts_contact_phone:document.getElementById('f-coAccPhone').value.trim()||null,
+    accounts_contact_email:document.getElementById('f-coAccEmail').value.trim()||null,
+    second_contact_name:document.getElementById('f-co2Name').value.trim()||null,
+    second_contact_phone:document.getElementById('f-co2Phone').value.trim()||null,
+    second_contact_email:document.getElementById('f-co2Email').value.trim()||null,
+    third_contact_name:document.getElementById('f-co3Name').value.trim()||null,
+    third_contact_phone:document.getElementById('f-co3Phone').value.trim()||null,
+    third_contact_email:document.getElementById('f-co3Email').value.trim()||null,
+    notes:document.getElementById('f-coNotes').value.trim()||null
+  };
+}
+
+function _coFormFill(co){
+  document.getElementById('f-coName').value=co.name||'';
+  document.getElementById('f-coReg').value=co.registration_number||'';
+  document.getElementById('f-coVat').value=co.vat_number||'';
+  document.getElementById('f-coBilling').value=co.billing_address||'';
+  document.getElementById('f-coSameAddr').checked=!!co.same_address;
+  document.getElementById('f-coCorresp').value=co.correspondence_address||'';
+  document.getElementById('f-coCorrespGroup').style.display=co.same_address?'none':'';
+  document.getElementById('f-coM1Name').value=co.main_contact_name||'';
+  document.getElementById('f-coM1Phone').value=co.main_contact_phone||'';
+  document.getElementById('f-coM1Email').value=co.main_contact_email||'';
+  document.getElementById('f-coAccName').value=co.accounts_contact_name||'';
+  document.getElementById('f-coAccPhone').value=co.accounts_contact_phone||'';
+  document.getElementById('f-coAccEmail').value=co.accounts_contact_email||'';
+  document.getElementById('f-co2Name').value=co.second_contact_name||'';
+  document.getElementById('f-co2Phone').value=co.second_contact_phone||'';
+  document.getElementById('f-co2Email').value=co.second_contact_email||'';
+  document.getElementById('f-co3Name').value=co.third_contact_name||'';
+  document.getElementById('f-co3Phone').value=co.third_contact_phone||'';
+  document.getElementById('f-co3Email').value=co.third_contact_email||'';
+  document.getElementById('f-coNotes').value=co.notes||'';
+}
+
+function openNewCompanyModal(){
+  editingCompanyId=null;
+  document.getElementById('companyModalTitle').textContent='Add Company';
+  _coFormFill({});
+  openModal('modalCompany');
+}
+
+function openEditCompanyModal(id){
+  const co=coById(id);if(!co)return;
+  editingCompanyId=id;
+  document.getElementById('companyModalTitle').textContent='Edit — '+co.name;
+  _coFormFill(co);
+  openModal('modalCompany');
+}
+
+async function saveCompany(){
+  const data=_coFormVals();
+  if(!data.name){notify('Company name is required',true);return;}
+  const btn=document.getElementById('saveCompanyBtn');btn.disabled=true;setSync('syncing');
+  try{
+    if(editingCompanyId){
+      await api.patch('companies',editingCompanyId,data);
+      Object.assign(coById(editingCompanyId),data);
+      setSync('live');closeModal();
+      if(currentView==='company')renderCompanyDetail(editingCompanyId);
+      else renderCompanies();
+      notify('Company updated');
+    }else{
+      data.id=uid();
+      await api.post('companies',data);
+      db.companies.push(data);
+      setSync('live');closeModal();renderCompanies();
+      notify('Company added!');
+    }
+  }catch(e){setSync('error');notify('Save failed: '+e.message,true);}
+  finally{btn.disabled=false;}
+}
+
+async function deleteCompany(id){
+  const co=coById(id);if(!co)return;
+  const pods=coPodcasts(co);
+  if(pods.length>0){notify(`Can't delete — ${pods.length} podcast${pods.length!==1?'s are':' is'} linked to this company`,true);return;}
+  if(!confirm(`Delete ${co.name}? This can't be undone.`))return;
+  setSync('syncing');
+  try{
+    await api.del('companies',`id=eq.${id}`);
+    db.companies=db.companies.filter(c=>c.id!==id);
+    setSync('live');navigate('companies');notify('Company deleted');
+  }catch(e){setSync('error');notify('Delete failed: '+e.message,true);}
+}
+
+function openNewPodcastModalForCompany(companyId){
+  const co=coById(companyId);if(!co)return;
+  openNewPodcastModal();
+  document.getElementById('f-podCompany').value=co.name;
+  if(co.main_contact_name)document.getElementById('f-podContact').value=co.main_contact_name;
 }
 
 // ============================================================
