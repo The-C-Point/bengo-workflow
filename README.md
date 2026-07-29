@@ -18,7 +18,7 @@ Internal workflow tool for **Bengo Media** (Dream Together Limited). Manages pod
 - **My Tasks** — per-person view of open episode tasks and to-dos
 - **To-Do** — freestanding tasks (not tied to an episode); table and Kanban views; CSV import
 - **Gantt chart** — canvas-based, zoomable, grouped by podcast; shows episode bars and task dots
-- **People** — add/edit team members; roles drive task assignment
+- **Settings** (admin only) — manage team members (Users tab), view task templates per podcast type (Task Templates tab), and browse podcast type descriptions (Podcast Types tab)
 - **Dashboard** — overdue count, overall completion %, team capacity, podcast progress, open task list
 - **Email notifications** — via Resend; episode team notify and urgent (3-day) reminders
 
@@ -120,6 +120,9 @@ See CLAUDE.md for full schema.
 - Added **Per-view search** — filter-as-you-type on All Tasks, My Tasks, To-Dos, and Companies; searches name, podcast, company, notes, assignee
 - Added **Undo (Oh Crap button)** — fixed bottom-left button; undoes last status cycle, bulk update, or Kanban quick-edit; auto-hides after 12 seconds
 - Added **Google Drive folder link** — URL field on podcast modal; 📁 icon on podcast cards; auto-creates "Set up Google Drive production folder" to-do on new podcast (pre-completed if URL provided); auto-completes that to-do when URL is added on edit
+
+### 29 July 2026
+- Added **Settings area** (admin only) — replaces the People nav item; contains three tabs: Users (team member management), Task Templates (full template table grouped by podcast type), Podcast Types (descriptions and task counts)
 
 ### 29 April 2026
 - Added **Kanban drag and drop** — drag cards between columns on both Tasks and To-Dos kanban boards; saves to Supabase on drop; undo supported; uses `addEventListener`-based approach for reliability
