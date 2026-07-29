@@ -287,7 +287,7 @@
           <input class="search-input" type="text" id="searchTasks" placeholder="Search tasks…" oninput="renderAllTasks()">
           <select class="filter-select" id="filterStatus" onchange="renderAllTasks()"><option value="">All Statuses</option><option>To Do</option><option>In Progress</option><option>In Review</option><option>Waiting / Blocked</option><option>Complete</option></select>
           <select class="filter-select" id="filterPodcast" onchange="renderAllTasks()"><option value="">All Podcasts</option></select>
-          <select class="filter-select" id="filterRole" onchange="renderAllTasks()"><option value="">All Roles</option><option>Producer</option><option>Editor</option><option>Executive Producer</option><option>Marketer</option><option>Accounts</option></select>
+          <select class="filter-select" id="filterRole" onchange="renderAllTasks()"><option value="">All Roles</option></select>
           <div class="view-toggle">
             <button class="view-toggle-btn active" id="toggleTable" onclick="setTaskView('table')">≡ Table</button>
             <button class="view-toggle-btn" id="toggleKanban" onclick="setTaskView('kanban')">⊞ Kanban</button>
@@ -347,6 +347,7 @@
       <div id="view-settings" class="hidden">
         <div class="settings-tabs">
           <div class="settings-tab active" id="stab-users" onclick="renderSettingsTab('users')">Users</div>
+          <div class="settings-tab" id="stab-roles" onclick="renderSettingsTab('roles')">Roles</div>
           <div class="settings-tab" id="stab-templates" onclick="renderSettingsTab('templates')">Task Templates</div>
           <div class="settings-tab" id="stab-types" onclick="renderSettingsTab('types')">Podcast Types</div>
         </div>
@@ -422,7 +423,7 @@
   <div class="modal hidden" id="modalPerson">
     <div class="modal-title" id="personModalTitle">Add Person</div>
     <div class="form-row"><div class="form-group"><label>Full Name</label><input type="text" id="f-personName"></div><div class="form-group"><label>Email</label><input type="email" id="f-personEmail"></div></div>
-    <div class="form-row"><div class="form-group"><label>Role</label><select id="f-personRole"><option>Producer</option><option>Editor</option><option>Executive Producer</option><option>Marketer</option><option>Accounts</option><option>Admin</option></select></div><div class="form-group"><label>App Access</label><select id="f-personUserRole"><option value="User">User</option><option value="Admin">Admin</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label>Role</label><select id="f-personRole"></select></div><div class="form-group"><label>App Access</label><select id="f-personUserRole"><option value="User">User</option><option value="Admin">Admin</option></select></div></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="savePersonBtn" onclick="savePerson()">Save</button></div>
   </div>
 
@@ -468,7 +469,7 @@
       <div class="form-group"><label>Due Date</label><input type="date" id="f-adhocDue"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Role</label><select id="f-adhocRole"><option>Producer</option><option>Editor</option><option>Executive Producer</option><option>Marketer</option><option>Accounts</option><option>Admin</option></select></div>
+      <div class="form-group"><label>Role</label><select id="f-adhocRole"></select></div>
       <div class="form-group"><label>Add to</label><select id="f-adhocScope"><option value="this">This episode only</option><option value="all">All remaining incomplete episodes</option></select></div>
     </div>
     <div class="form-group"><label>Notes</label><textarea id="f-adhocNotes" rows="2" placeholder="Any extra detail..."></textarea></div>
@@ -494,6 +495,29 @@
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
       <button class="btn" id="saveImportBtn" onclick="saveImportTodos()" disabled>Import</button>
     </div>
+  </div>
+
+  <div class="modal hidden" id="modalTemplateTask" style="max-width:520px">
+    <div class="modal-title" id="ttModalTitle">Add Task</div>
+    <div class="form-group"><label>Task ID <span style="font-weight:normal;color:var(--text-muted)">(leave blank to auto-generate)</span></label><input type="text" id="f-ttId" placeholder="e.g. TT-0010" style="font-family:monospace"></div>
+    <div class="form-group"><label>Task Name</label><input type="text" id="f-ttName" placeholder="What needs doing?"></div>
+    <div class="form-group"><label>Role</label><select id="f-ttRole"></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>Task Order <span style="font-weight:normal;color:var(--text-muted)">(e.g. 10, 20, 30…)</span></label><input type="number" id="f-ttOrder" min="1"></div>
+      <div class="form-group"><label>Days Before Launch <span style="font-weight:normal;color:var(--text-muted)">(0 = launch day)</span></label><input type="number" id="f-ttDays" min="0"></div>
+    </div>
+    <div class="form-group" id="f-ttSeriesGroup">
+      <label>Level</label>
+      <select id="f-ttSeries"><option value="episode">Per Episode (repeats on every episode)</option><option value="series">Series (runs once, on episode 1 only)</option></select>
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="saveTTBtn" onclick="saveTemplateTask()">Save Task</button></div>
+  </div>
+
+  <div class="modal hidden" id="modalPodcastType" style="max-width:480px">
+    <div class="modal-title" id="ptModalTitle">Add Podcast Type</div>
+    <div class="form-group"><label>Type Name</label><input type="text" id="f-ptName" placeholder="e.g. Documentary"></div>
+    <div class="form-group"><label>Description <span style="font-weight:normal;color:var(--text-muted)">(shown to the team)</span></label><textarea id="f-ptDesc" rows="3" placeholder="When to use this type…"></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="savePTBtn" onclick="savePodcastType()">Save</button></div>
   </div>
 
   <div class="modal hidden" id="modalTask">
@@ -639,7 +663,7 @@ const TEMPLATES={
   ]
 };
 
-let db={people:[],podcasts:[],episodes:[],tasks:[],todos:[]};
+let db={people:[],podcasts:[],episodes:[],tasks:[],todos:[],taskTemplates:[]};
 let currentView='dashboard',currentPodcastId=null,currentEpisodeId=null,editingPersonId=null,editingTaskId=null,currentUser='all';
 let ganttDayWidth=28,ganttExpanded={};
 let loggedInUser=null,isAdmin=false;
@@ -665,8 +689,69 @@ function setSync(s){const el=document.getElementById('syncIndicator');if(s==='sy
 function notify(msg,err){const el=document.createElement('div');el.className='notify'+(err?' err':'');el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);}
 
 async function loadAll(){
-  const[people,podcasts,episodes,tasks,todos]=await Promise.all([api.get('people','order=name'),api.get('podcasts','order=created_at'),api.get('episodes','order=number'),api.get('tasks','order=task_order'),api.get('todos','order=due_date')]);
+  const[people,podcasts,episodes,tasks,todos,taskTemplates]=await Promise.all([
+    api.get('people','order=name'),api.get('podcasts','order=created_at'),api.get('episodes','order=number'),
+    api.get('tasks','order=task_order'),api.get('todos','order=due_date'),
+    api.get('task_templates','order=task_order').catch(()=>null)
+  ]);
   db.people=people||[];db.podcasts=podcasts||[];db.episodes=episodes||[];db.tasks=tasks||[];db.todos=todos||[];
+  db.taskTemplates=taskTemplates||[];
+}
+
+const BUILT_IN_TASK_ROLES=['Executive Producer','Producer','Editor','Marketer','Accounts'];
+const BUILT_IN_PERSON_ROLES=['Executive Producer','Producer','Editor','Marketer','Accounts','Admin'];
+
+function getCustomRoles(){return JSON.parse(localStorage.getItem('bengo_custom_roles')||'[]');}
+function saveCustomRoles(roles){localStorage.setItem('bengo_custom_roles',JSON.stringify(roles));}
+function getTaskRoles(){return[...BUILT_IN_TASK_ROLES,...getCustomRoles().filter(r=>!BUILT_IN_TASK_ROLES.includes(r))];}
+function getPersonRoles(){return[...BUILT_IN_PERSON_ROLES,...getCustomRoles().filter(r=>!BUILT_IN_PERSON_ROLES.includes(r))];}
+function roleOptions(roles,selected){return roles.map(r=>`<option${r===selected?' selected':''}>${r}</option>`).join('');}
+
+const DEFAULT_TYPE_DESCRIPTIONS={
+  Interview:'Guest interview format. Standard workflow from booking through invoice.',
+  Solo:'Single host, no guest booking required.',
+  Panel:'Multiple hosts or guests.',
+  Scripted:'Scripted narrative format. Adds a script finalisation step.',
+  'Full Production':'End-to-end production — 8 phases from Discovery to Launch. Series-level tasks on episode 1 only; per-episode tasks on every episode.'
+};
+
+function getPodcastTypes(){
+  const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
+  const hardTypes=Object.keys(TEMPLATES);
+  const customTypes=Object.keys(stored).filter(t=>!hardTypes.includes(t));
+  return[...hardTypes,...customTypes].map(t=>({name:t,description:stored[t]?.description||DEFAULT_TYPE_DESCRIPTIONS[t]||''}));
+}
+
+function savePodcastTypeData(name,data){
+  const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
+  stored[name]={...stored[name],...data};
+  localStorage.setItem('bengo_podcast_types',JSON.stringify(stored));
+}
+
+function getTemplatesForType(type){
+  const dbTmpls=db.taskTemplates.filter(t=>t.podcast_type===type);
+  if(dbTmpls.length){
+    return dbTmpls.map(t=>({id:t.id,name:t.task_name,role:t.assigned_role,order:t.task_order,days:t.days_before_launch,series:t.notes==='series'}))
+      .sort((a,b)=>a.order-b.order);
+  }
+  return TEMPLATES[type]||[];
+}
+
+async function writeTemplatesForType(type,tasks){
+  setSync('syncing');
+  try{
+    await api.del('task_templates',`podcast_type=eq.${encodeURIComponent(type)}`);
+  }catch(e){}
+  const rows=tasks.map((t,i)=>({
+    id:t.id||('TT-X'+String(i).padStart(4,'0')),
+    podcast_type:type,task_name:t.name,assigned_role:t.role,
+    task_order:t.order,days_before_launch:t.days,
+    notes:type==='Full Production'?(t.series?'series':'episode'):null
+  }));
+  for(const row of rows){await api.post('task_templates',row);}
+  db.taskTemplates=db.taskTemplates.filter(t=>t.podcast_type!==type);
+  db.taskTemplates.push(...rows);
+  setSync('live');
 }
 
 function navigate(view,id){
@@ -965,7 +1050,10 @@ function progressRing(pct,size,stroke,color){
   </svg>`;
 }
 
-function populateTaskFilters(){document.getElementById('filterPodcast').innerHTML='<option value="">All Podcasts</option>'+db.podcasts.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');}
+function populateTaskFilters(){
+  document.getElementById('filterPodcast').innerHTML='<option value="">All Podcasts</option>'+db.podcasts.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  populateRoleFilter();
+}
 
 let taskViewMode = 'table';
 let todoViewMode = 'table';
@@ -1319,12 +1407,80 @@ function renderPeople(){
 }
 
 let _settingsTab='users';
+function renderSettingsRoles(){
+  const custom=getCustomRoles();
+  const allRoles=[...BUILT_IN_PERSON_ROLES,...custom.filter(r=>!BUILT_IN_PERSON_ROLES.includes(r))];
+  const html=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <p style="font-size:13px;color:var(--text-muted);margin:0">Add custom roles to reflect your team structure. Custom roles appear in task templates, task assignment, and the team member form.</p>
+    </div>
+    <table class="template-table" style="margin-bottom:20px">
+      <thead><tr><th>Role Name</th><th>Type</th><th>Used by</th><th></th></tr></thead>
+      <tbody>${allRoles.map(r=>{
+        const isBuiltIn=BUILT_IN_PERSON_ROLES.includes(r);
+        const peopleCount=db.people.filter(p=>p.role===r).length;
+        const tmplCount=Object.values(TEMPLATES).flat().filter(t=>t.role===r).length
+          +db.taskTemplates.filter(t=>t.assigned_role===r).length;
+        return`<tr>
+          <td style="font-weight:500">${r}</td>
+          <td style="font-size:12px;color:var(--text-muted)">${isBuiltIn?'Built-in':'Custom'}</td>
+          <td style="font-size:12px;color:var(--text-muted)">${peopleCount?peopleCount+' person'+(peopleCount!==1?'s':''):''}${peopleCount&&tmplCount?' · ':''}${tmplCount?tmplCount+' template task'+(tmplCount!==1?'s':''):''} ${!peopleCount&&!tmplCount?'—':''}</td>
+          <td style="text-align:right">${!isBuiltIn?`<button class="icon-btn danger" onclick="deleteCustomRole('${encodeURIComponent(r)}')" title="Delete">🗑</button>`:'<span style="color:var(--text-muted);font-size:11px">locked</span>'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+    <div style="display:flex;gap:10px;align-items:flex-end">
+      <div class="form-group" style="margin:0;flex:1;max-width:280px">
+        <label>New Role Name</label>
+        <input type="text" id="f-newRole" placeholder="e.g. Marketing Assistant" onkeydown="if(event.key==='Enter')addCustomRole()">
+      </div>
+      <button class="btn" onclick="addCustomRole()">+ Add Role</button>
+    </div>`;
+  document.getElementById('settingsContent').innerHTML=html;
+}
+
+function addCustomRole(){
+  const name=document.getElementById('f-newRole').value.trim();
+  if(!name){notify('Enter a role name',true);return;}
+  const all=getPersonRoles();
+  if(all.map(r=>r.toLowerCase()).includes(name.toLowerCase())){notify('That role already exists',true);return;}
+  const custom=getCustomRoles();
+  custom.push(name);
+  saveCustomRoles(custom);
+  notify(`Role "${name}" added`);
+  renderSettingsRoles();
+  // Refresh any open dropdowns that list roles
+  const fr=document.getElementById('filterRole');
+  if(fr)populateRoleFilter();
+}
+
+function deleteCustomRole(encoded){
+  const name=decodeURIComponent(encoded);
+  const peopleCount=db.people.filter(p=>p.role===name).length;
+  if(peopleCount>0){notify(`Can't delete — ${peopleCount} team member${peopleCount!==1?'s':''} use this role`,true);return;}
+  if(!confirm(`Delete role "${name}"?`))return;
+  saveCustomRoles(getCustomRoles().filter(r=>r!==name));
+  notify(`Role "${name}" deleted`);
+  renderSettingsRoles();
+}
+
+function populateRoleFilter(){
+  const el=document.getElementById('filterRole');if(!el)return;
+  const current=el.value;
+  el.innerHTML='<option value="">All Roles</option>'+getTaskRoles().map(r=>`<option${r===current?' selected':''}>${r}</option>`).join('');
+}
+
+let _settingsTmplType='Interview';
+let _editingTTId=null;
+let _editingPTName=null;
+
 function renderSettings(){_settingsTab='users';renderSettingsTab('users');}
 function renderSettingsTab(tab){
   _settingsTab=tab;
   document.querySelectorAll('.settings-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('stab-'+tab)?.classList.add('active');
   if(tab==='users')renderSettingsUsers();
+  else if(tab==='roles')renderSettingsRoles();
   else if(tab==='templates')renderSettingsTemplates();
   else if(tab==='types')renderSettingsPodcastTypes();
 }
@@ -1343,43 +1499,265 @@ function renderSettingsUsers(){
 }
 
 function renderSettingsTemplates(){
-  const types=Object.keys(TEMPLATES);
-  let html='<div style="overflow-x:auto">';
-  html+=`<table class="template-table"><thead><tr><th>ID</th><th>Task Name</th><th>Role</th><th>Order</th><th>Days Before Launch</th><th>Notes</th></tr></thead><tbody>`;
-  for(const type of types){
-    const tasks=TEMPLATES[type];
-    html+=`<tr><td colspan="6" class="template-type-header">${type} — ${tasks.length} task${tasks.length!==1?'s':''}</td></tr>`;
-    for(const t of tasks){
-      html+=`<tr><td style="font-family:monospace;color:var(--text-muted)">${t.id}</td><td>${t.name}</td><td>${t.role}</td><td style="color:var(--text-muted)">${t.order}</td><td>${t.days}</td><td style="color:var(--text-muted);font-size:12px">${t.series?'Series (episode 1 only)':''}</td></tr>`;
+  const types=getPodcastTypes().map(t=>t.name);
+  if(!types.includes(_settingsTmplType))_settingsTmplType=types[0]||'Interview';
+  const tasks=getTemplatesForType(_settingsTmplType);
+  const isFP=_settingsTmplType==='Full Production';
+  const isCustom=!TEMPLATES[_settingsTmplType];
+  const usingDB=db.taskTemplates.some(t=>t.podcast_type===_settingsTmplType);
+
+  const typeTabs=types.map(t=>`<button class="btn${t===_settingsTmplType?' btn-primary':' btn-ghost'} btn-sm" style="margin:0 4px 6px 0" onclick="selectTmplType('${t.replace(/'/g,"\\'")}')">
+    ${t}${db.taskTemplates.some(x=>x.podcast_type===t)?'<span title="Custom templates saved" style="margin-left:4px;color:var(--accent2)">●</span>':''}
+  </button>`).join('');
+
+  const tableRows=tasks.length?tasks.map(t=>`<tr>
+    <td style="font-family:monospace;font-size:11px;color:var(--text-muted);white-space:nowrap">${t.id||'—'}</td>
+    <td>${t.name}</td>
+    <td>${t.role}</td>
+    <td style="color:var(--text-muted);text-align:right">${t.order}</td>
+    <td style="text-align:right">${t.days}</td>
+    ${isFP?`<td style="font-size:12px;color:var(--text-muted)">${t.series?'Series':'Episode'}</td>`:''}
+    <td style="white-space:nowrap;text-align:right">
+      <button class="icon-btn" onclick="openEditTT('${encodeURIComponent(t.id||'')}')" title="Edit">✏️</button>
+      <button class="icon-btn danger" onclick="deleteTT('${encodeURIComponent(t.id||'')}','${encodeURIComponent(t.name)}')" title="Delete">🗑</button>
+    </td></tr>`).join('')
+    :`<tr><td colspan="${isFP?7:6}" style="text-align:center;padding:24px;color:var(--text-muted)">No tasks yet. Add one or import a CSV.</td></tr>`;
+
+  document.getElementById('settingsContent').innerHTML=`
+    <div style="margin-bottom:18px">${typeTabs}</div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+      <button class="btn" onclick="openAddTT()">+ Add Task</button>
+      <button class="btn btn-ghost" onclick="exportTmplCSV()">↓ Export CSV</button>
+      <label class="btn btn-ghost" style="cursor:pointer;margin:0">↑ Import CSV
+        <input type="file" accept=".csv" style="display:none" onchange="importTmplCSV(event)">
+      </label>
+      ${usingDB?`<button class="btn btn-ghost" style="color:var(--text-muted)" onclick="resetTmplToDefault('${_settingsTmplType.replace(/'/g,"\\'")}')">↺ Reset to defaults</button>`:''}
+      <span style="font-size:12px;color:var(--text-muted);margin-left:auto">${tasks.length} task${tasks.length!==1?'s':''} · ${usingDB?'<strong>Custom</strong>':'Built-in defaults'}</span>
+    </div>
+
+    <details style="margin-bottom:20px">
+      <summary style="cursor:pointer;font-size:13px;color:var(--text-muted);user-select:none">CSV format guide ▾</summary>
+      <div style="background:var(--surface2);border-radius:8px;padding:14px 16px;margin-top:8px;font-size:12px;line-height:1.8">
+        <strong>Required columns (exact header names):</strong><br>
+        <code style="background:var(--surface);padding:2px 6px;border-radius:4px">id,task_name,role,task_order,days_before_launch,series_level</code><br><br>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:2px 12px 2px 0;font-weight:600;white-space:nowrap">id</td><td>Unique ID, e.g. <code>TT-0010</code>. Leave blank to auto-generate.</td></tr>
+          <tr><td style="padding:2px 12px 2px 0;font-weight:600;white-space:nowrap">task_name</td><td>The task label shown to the team.</td></tr>
+          <tr><td style="padding:2px 12px 2px 0;font-weight:600;white-space:nowrap">role</td><td>One of: <code>Producer</code>, <code>Editor</code>, <code>Executive Producer</code>, <code>Marketer</code>, <code>Accounts</code></td></tr>
+          <tr><td style="padding:2px 12px 2px 0;font-weight:600;white-space:nowrap">task_order</td><td>Sort position. Use 10, 20, 30… or 100, 200… for phases. Lower = first.</td></tr>
+          <tr><td style="padding:2px 12px 2px 0;font-weight:600;white-space:nowrap">days_before_launch</td><td>Days before launch this task is due. <code>0</code> = launch day itself.</td></tr>
+          <tr><td style="padding:2px 12px 2px 0;font-weight:600;white-space:nowrap">series_level</td><td>Full Production only. <code>series</code> = runs once on episode 1. <code>episode</code> = repeats every episode. Leave blank for other types.</td></tr>
+        </table>
+        <br><strong style="color:var(--accent2)">Import replaces all tasks for this type. Export first to keep a backup.</strong>
+      </div>
+    </details>
+
+    <div style="overflow-x:auto">
+      <table class="template-table">
+        <thead><tr><th>ID</th><th>Task Name</th><th>Role</th><th style="text-align:right">Order</th><th style="text-align:right">Days Before Launch</th>${isFP?'<th>Level</th>':''}<th></th></tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+}
+
+function selectTmplType(type){_settingsTmplType=type;renderSettingsTemplates();}
+
+function openAddTT(){
+  _editingTTId=null;
+  document.getElementById('ttModalTitle').textContent='Add Task — '+_settingsTmplType;
+  ['f-ttId','f-ttName'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-ttRole').innerHTML=roleOptions(getTaskRoles(),'Producer');
+  document.getElementById('f-ttOrder').value='';
+  document.getElementById('f-ttDays').value='';
+  document.getElementById('f-ttSeriesGroup').style.display=_settingsTmplType==='Full Production'?'':'none';
+  document.getElementById('f-ttSeries').value='episode';
+  openModal('modalTemplateTask');
+}
+
+function openEditTT(encodedId){
+  const id=decodeURIComponent(encodedId);
+  const t=getTemplatesForType(_settingsTmplType).find(x=>x.id===id);
+  if(!t)return;
+  _editingTTId=id;
+  document.getElementById('ttModalTitle').textContent='Edit Task — '+_settingsTmplType;
+  document.getElementById('f-ttId').value=t.id||'';
+  document.getElementById('f-ttName').value=t.name;
+  document.getElementById('f-ttRole').innerHTML=roleOptions(getTaskRoles(),t.role);
+  document.getElementById('f-ttOrder').value=t.order;
+  document.getElementById('f-ttDays').value=t.days;
+  document.getElementById('f-ttSeriesGroup').style.display=_settingsTmplType==='Full Production'?'':'none';
+  document.getElementById('f-ttSeries').value=t.series?'series':'episode';
+  openModal('modalTemplateTask');
+}
+
+async function saveTemplateTask(){
+  const name=document.getElementById('f-ttName').value.trim();
+  const role=document.getElementById('f-ttRole').value;
+  const order=parseInt(document.getElementById('f-ttOrder').value);
+  const days=parseInt(document.getElementById('f-ttDays').value)||0;
+  if(!name||!role||isNaN(order)){notify('Name, role, and order are required',true);return;}
+  const id=document.getElementById('f-ttId').value.trim()||null;
+  const series=_settingsTmplType==='Full Production'&&document.getElementById('f-ttSeries').value==='series';
+  const btn=document.getElementById('saveTTBtn');btn.disabled=true;
+  try{
+    const current=getTemplatesForType(_settingsTmplType);
+    let updated;
+    if(_editingTTId){
+      updated=current.map(t=>t.id===_editingTTId?{...t,id:id||t.id,name,role,order,days,series}:t);
+    } else {
+      updated=[...current,{id:id||null,name,role,order,days,series}];
     }
+    updated.sort((a,b)=>a.order-b.order);
+    await writeTemplatesForType(_settingsTmplType,updated);
+    closeModal();renderSettingsTemplates();notify(_editingTTId?'Task updated':'Task added');
+  }catch(e){notify('Save failed: '+e.message,true);}
+  finally{btn.disabled=false;}
+}
+
+async function deleteTT(encodedId,encodedName){
+  const id=decodeURIComponent(encodedId),name=decodeURIComponent(encodedName);
+  if(!confirm(`Delete task "${name}"? This won't affect tasks already created.`))return;
+  const current=getTemplatesForType(_settingsTmplType);
+  const updated=current.filter(t=>t.id!==id);
+  try{await writeTemplatesForType(_settingsTmplType,updated);renderSettingsTemplates();notify('Task deleted');}
+  catch(e){notify('Delete failed: '+e.message,true);}
+}
+
+async function resetTmplToDefault(type){
+  if(!confirm(`Reset "${type}" tasks to built-in defaults? Any custom changes will be lost.`))return;
+  try{
+    setSync('syncing');
+    await api.del('task_templates',`podcast_type=eq.${encodeURIComponent(type)}`);
+    db.taskTemplates=db.taskTemplates.filter(t=>t.podcast_type!==type);
+    setSync('live');renderSettingsTemplates();notify('Reset to defaults');
+  }catch(e){setSync('error');notify('Reset failed: '+e.message,true);}
+}
+
+function exportTmplCSV(){
+  const tasks=getTemplatesForType(_settingsTmplType);
+  const isFP=_settingsTmplType==='Full Production';
+  const rows=[['id','task_name','role','task_order','days_before_launch','series_level']];
+  for(const t of tasks){
+    rows.push([t.id||'',t.name,t.role,t.order,t.days,isFP?(t.series?'series':'episode'):'']);
   }
-  html+='</tbody></table></div>';
-  html+=`<div style="margin-top:16px;padding:12px 16px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text-muted)">Task templates are currently defined in code. CSV import to override per-podcast coming in a future update.</div>`;
-  document.getElementById('settingsContent').innerHTML=html;
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`tasks-${_settingsTmplType.replace(/\s+/g,'-').toLowerCase()}.csv`;a.click();
+}
+
+async function importTmplCSV(e){
+  const file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  const text=await file.text();
+  const lines=text.trim().split(/\r?\n/);
+  if(lines.length<2){notify('CSV has no data rows',true);return;}
+  const header=parseCSVRow(lines[0]).map(h=>h.trim().toLowerCase());
+  const required=['id','task_name','role','task_order','days_before_launch'];
+  if(!required.every(c=>header.includes(c))){notify('Missing required columns. See CSV format guide.',true);return;}
+  const tasks=[];
+  for(let i=1;i<lines.length;i++){
+    if(!lines[i].trim())continue;
+    const vals=parseCSVRow(lines[i]);
+    const row={};header.forEach((h,j)=>row[h]=vals[j]?.trim()||'');
+    if(!row.task_name||!row.role||!row.task_order){continue;}
+    tasks.push({id:row.id||null,name:row.task_name,role:row.role,order:parseInt(row.task_order)||0,days:parseInt(row.days_before_launch)||0,series:row.series_level==='series'});
+  }
+  if(!tasks.length){notify('No valid tasks found in CSV',true);return;}
+  if(!confirm(`Import ${tasks.length} tasks for "${_settingsTmplType}"? This will replace the current task list.`))return;
+  try{await writeTemplatesForType(_settingsTmplType,tasks);renderSettingsTemplates();notify(`Imported ${tasks.length} tasks`);}
+  catch(err){notify('Import failed: '+err.message,true);}
+}
+
+function parseCSVRow(line){
+  const result=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
+    else if(c===','&&!inQ){result.push(cur);cur='';}
+    else{cur+=c;}
+  }
+  result.push(cur);return result;
 }
 
 function renderSettingsPodcastTypes(){
-  const typeDescriptions={
-    Interview:'Guest interview format. Standard 15-task workflow from booking through invoice.',
-    Solo:'Single host, no guest booking required. 15 tasks.',
-    Panel:'Multiple hosts or guests. 15 tasks.',
-    Scripted:'Scripted narrative format. Adds a script finalisation step. 15 tasks.',
-    'Full Production':'End-to-end production — 8 phases from Discovery to Launch. Series-level tasks (phases 1, 2, 5, 6, 7) on episode 1 only; per-episode tasks (phases 3, 4, 8) on every episode.'
-  };
-  const html=Object.keys(TEMPLATES).map(type=>{
-    const tasks=TEMPLATES[type];
-    const seriesCount=tasks.filter(t=>t.series).length;
-    const epCount=tasks.filter(t=>!t.series).length;
-    const meta=type==='Full Production'
-      ?`${tasks.length} tasks · ${seriesCount} series-level · ${epCount} per-episode`
-      :`${tasks.length} tasks`;
-    return`<div class="podcast-type-card">
-      <div class="podcast-type-name">${type}</div>
-      <div class="podcast-type-meta" style="margin-bottom:8px">${meta}</div>
-      <div style="font-size:13px;color:var(--text-muted)">${typeDescriptions[type]||''}</div>
-    </div>`;
-  }).join('');
+  const types=getPodcastTypes();
+  const html=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <span style="font-size:13px;color:var(--text-muted)">${types.length} podcast type${types.length!==1?'s':''}</span>
+      <button class="btn" onclick="openAddPodcastType()">+ Add Type</button>
+    </div>
+    ${types.map(pt=>{
+      const tasks=getTemplatesForType(pt.name);
+      const isFP=pt.name==='Full Production';
+      const seriesCount=tasks.filter(t=>t.series).length;
+      const epCount=tasks.filter(t=>!t.series).length;
+      const meta=isFP?`${tasks.length} tasks · ${seriesCount} series-level · ${epCount} per-episode`:`${tasks.length} tasks`;
+      const isBuiltIn=!!TEMPLATES[pt.name];
+      return`<div class="podcast-type-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div style="flex:1">
+            <div class="podcast-type-name">${pt.name}${isBuiltIn?'':' <span style="font-size:11px;color:var(--accent2);font-weight:normal">custom</span>'}</div>
+            <div class="podcast-type-meta" style="margin-bottom:8px">${meta}</div>
+            <div style="font-size:13px;color:var(--text-muted)">${pt.description||'<em>No description</em>'}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="icon-btn" onclick="openEditPodcastType('${encodeURIComponent(pt.name)}')" title="Edit description">✏️</button>
+            ${!isBuiltIn?`<button class="icon-btn danger" onclick="deletePodcastType('${encodeURIComponent(pt.name)}')" title="Delete type">🗑</button>`:''}
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-ghost btn-sm" onclick="selectTmplType('${pt.name.replace(/'/g,"\\'")}');renderSettingsTab('templates')">Edit tasks ▸</button>
+        </div>
+      </div>`;
+    }).join('')}`;
   document.getElementById('settingsContent').innerHTML=html;
+}
+
+function openAddPodcastType(){
+  _editingPTName=null;
+  document.getElementById('ptModalTitle').textContent='Add Podcast Type';
+  document.getElementById('f-ptName').value='';document.getElementById('f-ptDesc').value='';
+  document.getElementById('f-ptName').disabled=false;
+  openModal('modalPodcastType');
+}
+
+function openEditPodcastType(encodedName){
+  const name=decodeURIComponent(encodedName);
+  _editingPTName=name;
+  const types=getPodcastTypes();
+  const pt=types.find(t=>t.name===name);
+  document.getElementById('ptModalTitle').textContent='Edit Type';
+  document.getElementById('f-ptName').value=name;
+  document.getElementById('f-ptName').disabled=!!TEMPLATES[name];
+  document.getElementById('f-ptDesc').value=pt?.description||'';
+  openModal('modalPodcastType');
+}
+
+function savePodcastType(){
+  const name=document.getElementById('f-ptName').value.trim();
+  const desc=document.getElementById('f-ptDesc').value.trim();
+  if(!name){notify('Type name required',true);return;}
+  const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
+  if(!_editingPTName){
+    const all=getPodcastTypes().map(t=>t.name);
+    if(all.includes(name)){notify('A type with that name already exists',true);return;}
+  }
+  stored[_editingPTName||name]={description:desc};
+  localStorage.setItem('bengo_podcast_types',JSON.stringify(stored));
+  closeModal();renderSettingsPodcastTypes();populatePodcastTypeDropdown(name);notify(_editingPTName?'Type updated':'Type added');
+}
+
+function deletePodcastType(encodedName){
+  const name=decodeURIComponent(encodedName);
+  if(db.podcasts.some(p=>p.type===name)){notify(`Can't delete — ${db.podcasts.filter(p=>p.type===name).length} podcast(s) use this type`,true);return;}
+  if(!confirm(`Delete type "${name}"? Any saved tasks for it will also be removed from your templates.`))return;
+  const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
+  delete stored[name];
+  localStorage.setItem('bengo_podcast_types',JSON.stringify(stored));
+  db.taskTemplates=db.taskTemplates.filter(t=>t.podcast_type!==name);
+  api.del('task_templates',`podcast_type=eq.${encodeURIComponent(name)}`).catch(()=>{});
+  renderSettingsPodcastTypes();notify('Type deleted');
 }
 
 async function deletePerson(id){
@@ -1522,6 +1900,10 @@ function closeModalOnOverlay(e){if(e.target.id==='modalOverlay')closeModal();}
 
 let editingPodcastId = null;
 
+function populatePodcastTypeDropdown(selectedType){
+  document.getElementById('f-podType').innerHTML=getPodcastTypes().map(t=>`<option${t.name===selectedType?' selected':''}>${t.name}</option>`).join('');
+}
+
 function openNewPodcastModal(){
   editingPodcastId = null;
   document.getElementById('podcastModalTitle').textContent='New Podcast';
@@ -1529,6 +1911,7 @@ function openNewPodcastModal(){
   document.getElementById('f-podSeason').value=1;document.getElementById('f-podEpCount').value=6;document.getElementById('f-podLaunchDate').value='';
   document.getElementById('f-podLaunchDate').closest('.form-row').style.display='';
   document.getElementById('savePodcastBtn').textContent='Create Podcast + Episodes';
+  populatePodcastTypeDropdown('Interview');
   ['f-podEP','f-podProducer','f-podAP','f-podEditor','f-podAccounts'].forEach(function(fid){var sel=document.getElementById(fid);if(!sel)return;var emptyLabel=fid==='f-podAP'?'— None —':'— Select —';sel.innerHTML='<option value="">'+emptyLabel+'</option>'+db.people.map(p=>'<option value="'+p.id+'">'+p.name+' ('+p.role+')</option>').join('');});
   openModal('modalPodcast');
 }
@@ -1542,7 +1925,7 @@ function openEditPodcastModal(id){
   document.getElementById('f-podCompany').value=p.company||'';
   document.getElementById('f-podContact').value=p.contact||'';
   document.getElementById('f-podGdrive').value=p.google_folder_url||'';
-  document.getElementById('f-podType').value=p.type||'Interview';
+  populatePodcastTypeDropdown(p.type||'Interview');
   document.getElementById('f-podFreq').value=p.frequency||'Weekly';
   document.getElementById('f-podSeason').value=p.season||1;
   document.getElementById('f-podEpCount').value=p.episode_count||6;
@@ -1620,7 +2003,7 @@ async function savePodcast(){
     const gdriveUrl=document.getElementById('f-podGdrive').value.trim()||null;
     const pod={id:uid(),name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:gdriveUrl};
     await api.post('podcasts',pod);db.podcasts.push(pod);
-    const tmpls=TEMPLATES[pod.type]||TEMPLATES.Interview,interval=freqDays(pod.frequency),sn=String(pod.season).padStart(2,'0');
+    const tmpls=getTemplatesForType(pod.type),interval=freqDays(pod.frequency),sn=String(pod.season).padStart(2,'0');
     const isFullProd=pod.type==='Full Production';
     for(let i=0;i<pod.episode_count;i++){
       const epLaunch=addDays(ld,i*interval),en=String(i+1).padStart(2,'0');
@@ -1657,7 +2040,7 @@ async function saveEpisode(){
     const num=parseInt(document.getElementById('f-epNum').value)||1,sn=String(pod.season).padStart(2,'0'),en=String(num).padStart(2,'0');
     const ep={id:uid(),podcast_id:currentPodcastId,number:num,title:document.getElementById('f-epTitle').value.trim(),default_title:`S${sn}E${en}`,launch_date:dv,status:'To Do'};
     await api.post('episodes',ep);db.episodes.push(ep);
-    const tmpls=TEMPLATES[pod.type]||TEMPLATES.Interview;
+    const tmpls=getTemplatesForType(pod.type);
     // Full Production: individually-added episodes only get per-episode tasks (series tasks live on ep1)
     const activeTmpls=pod.type==='Full Production'?tmpls.filter(t=>!t.series):tmpls;
     for(const tmpl of activeTmpls){
@@ -1670,8 +2053,8 @@ async function saveEpisode(){
   finally{btn.disabled=false;btn.textContent='Create Episode + Tasks';}
 }
 
-function openNewPersonModal(){editingPersonId=null;document.getElementById('personModalTitle').textContent='Add Person';['f-personName','f-personEmail'].forEach(id=>document.getElementById(id).value='');openModal('modalPerson');}
-function openEditPersonModal(id){editingPersonId=id;const p=pById(id);if(!p)return;document.getElementById('personModalTitle').textContent='Edit Person';document.getElementById('f-personName').value=p.name;document.getElementById('f-personEmail').value=p.email||'';document.getElementById('f-personRole').value=p.role;document.getElementById('f-personUserRole').value=p.user_role||'User';openModal('modalPerson');}
+function openNewPersonModal(){editingPersonId=null;document.getElementById('personModalTitle').textContent='Add Person';['f-personName','f-personEmail'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),'Producer');document.getElementById('f-personUserRole').value='User';openModal('modalPerson');}
+function openEditPersonModal(id){editingPersonId=id;const p=pById(id);if(!p)return;document.getElementById('personModalTitle').textContent='Edit Person';document.getElementById('f-personName').value=p.name;document.getElementById('f-personEmail').value=p.email||'';document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),p.role);document.getElementById('f-personUserRole').value=p.user_role||'User';openModal('modalPerson');}
 
 async function savePerson(){
   const name=document.getElementById('f-personName').value.trim(),email=document.getElementById('f-personEmail').value.trim();
@@ -1870,6 +2253,7 @@ function openAdhocTaskModal(){
   document.getElementById('f-adhocDue').value='';
   document.getElementById('f-adhocNotes').value='';
   document.getElementById('f-adhocScope').value='this';
+  document.getElementById('f-adhocRole').innerHTML=roleOptions(getTaskRoles(),'Producer');
   document.getElementById('f-adhocAssigned').innerHTML='<option value="">— Unassigned —</option>'+db.people.map(p=>`<option value="${p.id}">${p.name} (${p.role})</option>`).join('');
   updateAdhocPreview();
   document.getElementById('f-adhocScope').onchange = updateAdhocPreview;
@@ -2354,7 +2738,7 @@ async function saveBatchEpisodes(){
 
   try{
     const interval = freqDays(pod.frequency);
-    const tmpls = TEMPLATES[pod.type]||TEMPLATES.Interview;
+    const tmpls = getTemplatesForType(pod.type);
     // Full Production: batch episodes only get per-episode tasks (series tasks already on ep1)
     const activeTmpls = pod.type==='Full Production' ? tmpls.filter(t=>!t.series) : tmpls;
     const sn = String(pod.season).padStart(2,'0');

@@ -126,9 +126,39 @@ Full Production is the most complex type. Series-level tasks (discovery, pre-pro
 
 The **Settings** section (bottom of the sidebar) is where admins manage the configuration behind the app.
 
-- **Users** — add, edit, or remove team members. Same as the old People screen.
-- **Task Templates** — view the full task list for each podcast type. Shows task ID, name, role, order, and days before launch. (CSV import coming later.)
-- **Podcast Types** — a quick reference for what each type means and how many tasks it generates.
+### Users
+Add, edit, or remove team members. Same as the old People screen.
+
+### Roles
+Add custom roles to reflect how your organisation is structured — for example, Marketing Assistant, Admin Assistant, Social Media Manager. Custom roles appear everywhere roles are used: the team member form, task template assignment, ad hoc task assignment, and the All Tasks filter.
+
+Built-in roles (Executive Producer, Producer, Editor, Marketer, Accounts, Admin) are locked and can't be removed. Custom roles can be deleted as long as no team members currently have that role.
+
+### Task Templates
+Manage the tasks that get auto-generated when a new podcast or episode is created.
+
+- Use the type buttons at the top to switch between podcast types
+- **Add Task** — add a single task via the form
+- **Export CSV** — download the current task list as a spreadsheet
+- **Import CSV** — upload a CSV to replace the entire task list for that type (see format guide inside the tab)
+- **Reset to defaults** — appears when you've customised a type; wipes your changes and restores the built-in list
+- A **●** next to a type name means it has been customised and is saved to the database
+
+**CSV format** (shown in the in-app guide):
+
+| Column | Required | Notes |
+|---|---|---|
+| `id` | No | e.g. `TT-0010`. Auto-generated if blank. |
+| `task_name` | Yes | Label shown to the team |
+| `role` | Yes | Producer, Editor, Executive Producer, Marketer, Accounts |
+| `task_order` | Yes | Sort order. Use 10, 20, 30… Lower = first. |
+| `days_before_launch` | Yes | Days before launch date. 0 = launch day. |
+| `series_level` | Full Production only | `series` (runs once) or `episode` (repeats). Leave blank for other types. |
+
+Always export before importing — import replaces the entire list.
+
+### Podcast Types
+View all types, edit descriptions, and add custom types for workflows beyond the built-in five. Click **Edit tasks ▸** on any type to jump straight to its template.
 
 ---
 

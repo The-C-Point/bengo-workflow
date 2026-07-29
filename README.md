@@ -18,7 +18,7 @@ Internal workflow tool for **Bengo Media** (Dream Together Limited). Manages pod
 - **My Tasks** — per-person view of open episode tasks and to-dos
 - **To-Do** — freestanding tasks (not tied to an episode); table and Kanban views; CSV import
 - **Gantt chart** — canvas-based, zoomable, grouped by podcast; shows episode bars and task dots
-- **Settings** (admin only) — manage team members (Users tab), view task templates per podcast type (Task Templates tab), and browse podcast type descriptions (Podcast Types tab)
+- **Settings** (admin only) — four tabs: **Users** (team member management), **Roles** (add custom roles e.g. Marketing Assistant), **Task Templates** (view, add, edit, delete, export and import per type via CSV), **Podcast Types** (descriptions, add custom types)
 - **Dashboard** — overdue count, overall completion %, team capacity, podcast progress, open task list
 - **Email notifications** — via Resend; episode team notify and urgent (3-day) reminders
 
@@ -122,7 +122,12 @@ See CLAUDE.md for full schema.
 - Added **Google Drive folder link** — URL field on podcast modal; 📁 icon on podcast cards; auto-creates "Set up Google Drive production folder" to-do on new podcast (pre-completed if URL provided); auto-completes that to-do when URL is added on edit
 
 ### 29 July 2026
-- Added **Settings area** (admin only) — replaces the People nav item; contains three tabs: Users (team member management), Task Templates (full template table grouped by podcast type), Podcast Types (descriptions and task counts)
+- Added **Settings area** (admin only) — replaces the People nav item; three tabs: Users, Task Templates, Podcast Types
+- **Task Templates tab**: view/add/edit/delete individual tasks per type; export as CSV; import from CSV (replaces type's task list); Reset to defaults; ● indicator when a type has been customised; built-in fallback to hardcoded templates when no Supabase records exist
+- **Podcast Types tab**: view all types with task counts; edit descriptions; add custom types; delete unused types; "Edit tasks ▸" shortcut into the templates tab
+- **Roles tab**: add custom roles (e.g. Marketing Assistant, Admin Assistant) that appear in the team member form, task template role picker, ad hoc task role picker, and All Tasks filter; built-in roles are locked; custom roles are deletable if no team members use them
+- Task templates now loaded from Supabase `task_templates` table at startup (falls back to hardcoded if empty)
+- Podcast creation modal type dropdown now dynamic — picks up custom types automatically
 
 ### 29 April 2026
 - Added **Kanban drag and drop** — drag cards between columns on both Tasks and To-Dos kanban boards; saves to Supabase on drop; undo supported; uses `addEventListener`-based approach for reliability
