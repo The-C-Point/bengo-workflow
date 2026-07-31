@@ -1190,10 +1190,10 @@ function renderAllTasks(){
       </tr>`;
     }
     const ep=epById(t.episode_id),pod=ep?podById(ep.podcast_id):null,person=t.assigned_to?pById(t.assigned_to):null;
-    return`<tr class="clickable" onclick="navigate('episode-tasks','${t.episode_id}')">
+    return`<tr class="clickable" onclick="openEditTaskModal('${t.id}')">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="task-select-cb" data-id="${t.id}" onclick="onTaskCheckbox()" style="accent-color:var(--accent)"></td>
       <td>${pod?pod.name:'—'}</td>
-      <td>${ep?`<span class="ep-num">${ep.default_title||'E'+ep.number}</span><span style="color:var(--text-muted);font-size:11px;margin-left:4px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">${ep.title||''}</span>`:'—'}</td>
+      <td onclick="event.stopPropagation();navigate('episode-tasks','${t.episode_id}')" style="cursor:pointer;color:var(--accent)">${ep?`<span class="ep-num">${ep.default_title||'E'+ep.number}</span><span style="font-size:11px;margin-left:4px">${ep.title||''}</span>`:'—'}</td>
       <td>${t.name}</td>
       <td>${person?`<span class="assignee-chip"><span class="avatar">${ini(person.name)}</span>${person.name}</span>`:'<span style="color:var(--text-muted)">Unassigned</span>'}</td>
       <td class="${od?'date-overdue':''}">${formatDate(t.due_date)}</td>
@@ -1439,10 +1439,10 @@ function renderMyTasks(){
     </tr></thead><tbody>
     ${tasks.map(t=>{const ep=epById(t.episode_id),pod=ep?podById(ep.podcast_id):null,od=t.due_date&&new Date(t.due_date)<today;
     const chk=selectedMyTaskIds.has(t.id)?'checked':'';
-    return`<tr class="clickable" onclick="navigate('episode-tasks','${t.episode_id}')">
+    return`<tr class="clickable" onclick="openEditTaskModal('${t.id}')">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="my-task-cb" data-id="${t.id}" data-type="task" ${chk} onchange="onMyTaskCheckbox()"></td>
       <td>${t.name}</td>
-      <td>${ep?`<span class="ep-num">${ep.default_title||'E'+ep.number}</span> ${ep.title||''}`:'—'}</td>
+      <td onclick="event.stopPropagation();navigate('episode-tasks','${t.episode_id}')" style="cursor:pointer;color:var(--accent)">${ep?`<span class="ep-num">${ep.default_title||'E'+ep.number}</span> ${ep.title||''}`:'—'}</td>
       <td>${pod?pod.name:'—'}</td>
       <td class="${od?'date-overdue':''}">${formatDate(t.due_date)}</td>
       <td><button class="status-pill ${scls(t.status)}" onclick="event.stopPropagation();qCycle('${t.id}')">${t.status}</button></td>
@@ -2155,6 +2155,7 @@ async function saveTask(){
   const t=db.tasks.find(t=>t.id===editingTaskId);if(!t)return;
   const btn=document.getElementById('saveTaskBtn');btn.disabled=true;setSync('syncing');
   try{
+    const prevAssignedTo=t.assigned_to;
     const data={assigned_to:document.getElementById('f-taskAssigned').value||null,status:document.getElementById('f-taskStatus').value,due_date:document.getElementById('f-taskDue').value||null,start_date:document.getElementById('f-taskStart').value||null,notes:document.getElementById('f-taskNotes').value.trim()};
     await api.patch('tasks',editingTaskId,data);Object.assign(t,data);
 
@@ -2175,7 +2176,25 @@ async function saveTask(){
       }
     }
 
-    setSync('live');closeModal();renderEpisodeTasks();
+    // Reassignment notification
+    if(data.assigned_to && data.assigned_to!==prevAssignedTo){
+      const newPerson=pById(data.assigned_to);
+      const ep=epById(t.episode_id);
+      const pod=ep?podById(ep.podcast_id):null;
+      if(newPerson&&newPerson.email){
+        const epLabel=ep?(ep.default_title||'Episode '+ep.number):'';
+        const podLabel=pod?pod.name:'';
+        sendEmail(newPerson.email,
+          'You\'ve been assigned a task — '+t.name,
+          `<p>Hi ${newPerson.name},</p><p>You've been assigned a task:</p><p style="font-size:16px;font-weight:600">${t.name}</p><p>${podLabel}${epLabel?' · '+epLabel:''}</p>${t.due_date?'<p>Due: '+formatDate(t.due_date)+'</p>':''}<p>Log in to the Bengo workflow app to view it.</p>`
+        );
+      }
+    }
+
+    setSync('live');closeModal();
+    if(currentView==='tasks')renderAllTasks();
+    else if(currentView==='mytasks')renderMyTasks();
+    else renderEpisodeTasks();
     notify(cascadeCount > 0 ? 'Task saved — ' + cascadeCount + ' other task' + (cascadeCount!==1?'s':'') + ' also reassigned' : 'Task saved');
   }catch(e){setSync('error');notify('Error: '+e.message,true);}
   finally{btn.disabled=false;}
