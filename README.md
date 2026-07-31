@@ -21,7 +21,7 @@ Internal workflow tool for **Bengo Media** (Dream Together Limited). Manages pod
 - **Companies** — full CRM view: company cards with registration number, VAT, addresses, up to four contacts (main, accounts, second, third), notes; company detail view with linked podcasts; add podcast pre-fills company name
 - **Settings** (admin only) — four tabs: **Users** (team member management), **Roles** (add custom roles e.g. Marketing Assistant), **Task Templates** (view, add, edit, delete, export and import per type via CSV), **Podcast Types** (descriptions, add custom types)
 - **Dashboard** — overdue count, overall completion %, team capacity, podcast progress, open task list
-- **Email notifications** — via Resend; episode team notify and urgent (3-day) reminders
+- **Email notifications** — via Resend; episode team notify, urgent (3-day) reminders, and reassignment alerts
 
 ### Podcast types and task templates
 
@@ -122,7 +122,12 @@ See CLAUDE.md for full schema.
 - Added **Undo (Oh Crap button)** — fixed bottom-left button; undoes last status cycle, bulk update, or Kanban quick-edit; auto-hides after 12 seconds
 - Added **Google Drive folder link** — URL field on podcast modal; 📁 icon on podcast cards; auto-creates "Set up Google Drive production folder" to-do on new podcast (pre-completed if URL provided); auto-completes that to-do when URL is added on edit
 
-### 29 July 2026 (continued)
+### 29 July 2026 (session 3)
+- Added **Contacts view** — 👤 nav item (admin only); aggregates all contacts across every company into a searchable table (Name, Role, Company, Phone, Email); View button opens individual contact detail page; Company → button navigates to parent company; contact detail shows full info with back links to contacts list and company record
+- Fixed **search input focus loss** in Companies view — typing more than one character now works correctly; cursor position is preserved across re-renders
+- Started **Bespoken Media duplicate** (`bespoken-workflow.html`) — full rebrand: light background, dark navy (#031a39) sidebar, Sora headings, Lato body, yellow→orange→pink gradient; all "Bengo" references replaced; Supabase and Resend keys left as placeholders; localStorage keys renamed to `bespoken_*`
+
+### 29 July 2026 (session 2)
 - Rebuilt **Companies view as CRM** — company cards with reg number, VAT, billing + correspondence addresses, main/accounts/second/third contacts; company detail page; delete blocked if podcasts linked; add podcast from company pre-fills name and contact; orphan podcasts (no matching company record) shown in a separate section
 - New `companies` Supabase table required (see SQL below)
 

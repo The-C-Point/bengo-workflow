@@ -29,9 +29,11 @@ Use the **search bar** at the top of My Tasks, All Tasks, or To-Dos to filter as
 Click the coloured status pill on any task to cycle it forward:
 `To Do → In Progress → In Review → Waiting / Blocked → Complete`
 
-Or click the ✏️ icon to open the full edit panel — change assignee, due date, status, and add notes.
+Click anywhere on a task row (in All Tasks or My Tasks) to open the full edit panel — change assignee, due date, status, and add notes. To go to the episode the task belongs to, click the episode name in the row instead.
 
 **On the Kanban board** — drag a card into a different column to change its status. Or click a card to open a quick-edit popup where you can change the status, due date, or assignee inline. Click 🔍 to open the full task detail.
+
+**Reassignment notifications** — if you reassign a task to someone else, they'll automatically get an email letting them know.
 
 ---
 
@@ -63,6 +65,14 @@ You can paste a **Google Drive folder link** when creating a podcast (or add it 
 **+ (batch add)** on a podcast card adds more episodes continuing from where the last one left off.
 
 **Edit (✏️)** on a podcast card lets you update team assignments. If you change who's the Producer or Editor, you'll be asked if you want to reassign all their open tasks across incomplete episodes.
+
+---
+
+## Contacts
+
+The **Contacts** view lists every contact person across all companies in one searchable table — name, role (Main/Accounts/Second/Third), company, phone, and email.
+
+Click **View** to open a contact's individual detail page. Click **Company →** to jump straight to their company record.
 
 ---
 
