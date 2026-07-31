@@ -2690,8 +2690,7 @@ const STATUSES=['To Do','In Progress','In Review','Waiting / Blocked','Complete'
 const RESEND_KEY = ''; // Do not put API keys here — this file is public on GitHub
 const FROM_EMAIL = 'onboarding@resend.dev'; // Temporary -- swap to workflow@bengomedia.com once domain is verified
 
-async function sendEmail(to, subject, html){
-  if(!RESEND_KEY){ notify('Add your Resend API key to enable emails', true); return false; }
+async function sendEmail(to, subject, html)
   try{
     const res = await fetch('/.netlify/functions/send-email', {
       method:'POST',
