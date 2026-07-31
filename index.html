@@ -8,7 +8,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Varela+Round&family=DM+Serif+Display:ital@0;1&display=swap');
   :root {
     --bg:#0f0e0c;--surface:#1a1916;--surface2:#242220;--border:#2e2c28;
-    --accent:#e8c547;--accent2:#e87d47;--text:#f0ece4;--text-muted:#7a7568;--text-dim:#4a4740;
+    --accent:#e8c547;--accent2:#e87d47;--text:#f0ece4;--text-muted:#c8c2b6;--text-dim:#8a8478;
     --todo:#4a4740;--inprogress:#1a4a7a;--inreview:#2a1a5a;--waiting:#4a2a00;--complete:#1a4a2a;
     --todo-text:#9a9388;--inprogress-text:#60aaee;--inreview-text:#b090ff;--waiting-text:#ee9940;--complete-text:#50cc80;
   }
@@ -2687,7 +2687,7 @@ async function applyBulkUpdate(){
 // EMAIL NOTIFICATIONS (Resend)
 // ============================================================
 const STATUSES=['To Do','In Progress','In Review','Waiting / Blocked','Complete'];
-const RESEND_KEY = 're_CnjUNydC_4tzcnXwEd4eHjxnwRxVchMcq';
+const RESEND_KEY = ''; // Do not put API keys here — this file is public on GitHub
 const FROM_EMAIL = 'onboarding@resend.dev'; // Temporary -- swap to workflow@bengomedia.com once domain is verified
 
 async function sendEmail(to, subject, html){
