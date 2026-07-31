@@ -2693,10 +2693,10 @@ const FROM_EMAIL = 'onboarding@resend.dev'; // Temporary -- swap to workflow@ben
 async function sendEmail(to, subject, html){
   if(!RESEND_KEY){ notify('Add your Resend API key to enable emails', true); return false; }
   try{
-    const res = await fetch('https://api.resend.com/emails', {
+    const res = await fetch('/.netlify/functions/send-email', {
       method:'POST',
-      headers:{'Authorization':'Bearer '+RESEND_KEY,'Content-Type':'application/json'},
-      body: JSON.stringify({from:FROM_EMAIL, to:[to], subject, html})
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({to, subject, html})
     });
     return res.ok;
   }catch(err){ console.error('Email error:', err); return false; }
