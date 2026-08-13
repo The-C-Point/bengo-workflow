@@ -3,41 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bespoken Media — Podcast Workflow</title>
+<title>Bengo Media — Podcast Workflow</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Lato:ital,wght@0,300;0,400;0,700;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Varela+Round&family=DM+Serif+Display:ital@0;1&display=swap');
   :root {
-    --bg:#f2f4f7;--surface:#ffffff;--surface2:#edf0f5;--border:#dde2eb;
-    --accent:#E82B5F;--accent2:#E8512A;--accent3:#F3D200;
-    --text:#031a39;--text-muted:#5a6a80;--text-dim:#a0adb8;
-    --sidebar-bg:#031a39;--sidebar-text:#c8d4e0;--sidebar-active:#ffffff;
-    --todo:#e8edf5;--inprogress:#dbeafe;--inreview:#ede9fe;--waiting:#fef3c7;--complete:#dcfce7;
-    --todo-text:#4a5a6a;--inprogress-text:#1d4ed8;--inreview-text:#7c3aed;--waiting-text:#b45309;--complete-text:#15803d;
-    --gradient:linear-gradient(90deg,#F3D200,#E8512A,#E82B5F);
+    --bg:#0f0e0c;--surface:#1a1916;--surface2:#242220;--border:#2e2c28;
+    --accent:#e8c547;--accent2:#e87d47;--text:#f0ece4;--text-muted:#c8c2b6;--text-dim:#8a8478;
+    --todo:#4a4740;--inprogress:#1a4a7a;--inreview:#2a1a5a;--waiting:#4a2a00;--complete:#1a4a2a;
+    --todo-text:#9a9388;--inprogress-text:#60aaee;--inreview-text:#b090ff;--waiting-text:#ee9940;--complete-text:#50cc80;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+  body{font-family:'Varela Round',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
   .app{display:flex;height:100vh;overflow:hidden;}
-  .sidebar{width:220px;min-width:220px;background:var(--sidebar-bg);border-right:none;display:flex;flex-direction:column;}
-  .logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08);}
-  .logo-title{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-  .logo-sub{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;}
+  .sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  .logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);}
+  .logo-title{font-family:'Varela Round',sans-serif;font-size:18px;color:var(--accent);}
+  .logo-sub{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;}
   .nav{padding:12px 0;flex:1;}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:var(--sidebar-text);font-size:13px;transition:all .15s;border-left:2px solid transparent;}
-  .nav-item:hover{color:#ffffff;background:rgba(255,255,255,.06);}
-  .nav-item.active{color:#ffffff;border-left-color:#E82B5F;background:rgba(232,43,95,.12);}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:var(--text-muted);font-size:13px;transition:all .15s;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--surface2);}
+  .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(232,197,71,.06);}
   .nav-icon{font-size:15px;width:20px;text-align:center;}
-  .user-switcher{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);}
-  .user-label{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
-  .user-select{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#ffffff;padding:7px 10px;border-radius:6px;font-size:12px;font-family:'Lato',sans-serif;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23c8d4e0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
-  .sync-indicator{font-size:10px;color:rgba(255,255,255,.3);text-align:center;padding:8px 20px 14px;}
-  .sync-indicator.syncing{color:#F3D200;}
-  .sync-indicator.error{color:#E82B5F;}
+  .user-switcher{padding:16px 20px;border-top:1px solid var(--border);}
+  .user-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+  .user-select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;font-family:'Varela Round',sans-serif;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
+  .sync-indicator{font-size:10px;color:var(--text-dim);text-align:center;padding:8px 20px 14px;}
+  .sync-indicator.syncing{color:var(--accent);}
+  .sync-indicator.error{color:#e05050;}
   .main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
-  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 1px 3px rgba(3,26,57,.06);}
-  .topbar-title{font-family:'Sora',sans-serif;font-size:22px;font-weight:600;color:var(--text);}
-  .btn{background:var(--accent);color:#ffffff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
-  .btn:hover{background:#c5234f;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+  .topbar-title{font-family:'Varela Round',sans-serif;font-size:22px;color:var(--text);}
+  .btn{background:var(--accent);color:#1a1400;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Varela Round',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn:hover{background:#f0d060;}
   .btn:disabled{opacity:.4;cursor:not-allowed;}
   .btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border);}
   .btn-ghost:hover{color:var(--text);background:var(--surface2);}
@@ -46,7 +43,7 @@
   .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;cursor:pointer;transition:all .15s;position:relative;}
   .card:hover{border-color:var(--accent);background:var(--surface2);}
   .card-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:8px;}
-  .card-title{font-family:'Sora',sans-serif;font-size:20px;color:var(--text);margin-bottom:6px;}
+  .card-title{font-family:'Varela Round',sans-serif;font-size:20px;color:var(--text);margin-bottom:6px;}
   .card-meta{font-size:12px;color:var(--text-muted);line-height:1.7;}
   .card-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;margin-top:10px;text-transform:uppercase;letter-spacing:.5px;}
   .badge-interview{background:rgba(232,197,71,.15);color:var(--accent);}
@@ -57,7 +54,7 @@
   .card:hover .card-actions{opacity:1;}
   .icon-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);width:28px;height:28px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;}
   .icon-btn:hover{color:var(--text);}
-  .icon-btn.danger:hover{color:#E82B5F;border-color:#fbc4d0;background:#fff0f3;}
+  .icon-btn.danger:hover{color:#e05050;border-color:#3a2020;background:#1a0a0a;}
   .ep-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
   .back-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:4px;}
   .back-btn:hover{color:var(--text);}
@@ -66,7 +63,7 @@
   td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);vertical-align:middle;}
   tr:last-child td{border-bottom:none;}
   tr.clickable:hover td{background:var(--surface2);cursor:pointer;}
-  .status-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;border:none;font-family:'Sora',sans-serif;}
+  .status-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;border:none;font-family:'Varela Round',sans-serif;}
   .status-pill.todo{background:var(--todo);color:var(--todo-text);}
   .status-pill.inprogress{background:var(--inprogress);color:var(--inprogress-text);}
   .status-pill.waiting{background:var(--waiting);color:var(--waiting-text);}
@@ -74,9 +71,9 @@
   .progress-bar{height:4px;background:var(--surface2);border-radius:2px;width:80px;}
   .progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s;}
   .task-filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
-  .filter-select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;font-size:12px;font-family:'Sora',sans-serif;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px;}
+  .filter-select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;font-size:12px;font-family:'Varela Round',sans-serif;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px;}
   .ms-wrap{position:relative;display:inline-block;}
-  .ms-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer;font-size:12px;min-width:120px;text-align:left;display:inline-flex;align-items:center;justify-content:space-between;gap:8px;font-family:'Sora',sans-serif;white-space:nowrap;}
+  .ms-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer;font-size:12px;min-width:120px;text-align:left;display:inline-flex;align-items:center;justify-content:space-between;gap:8px;font-family:'Varela Round',sans-serif;white-space:nowrap;}
   .ms-btn:hover{border-color:var(--accent);}
   .ms-btn.has-filter{border-color:var(--accent);background:var(--surface2);}
   .ms-drop{position:absolute;top:calc(100% + 4px);left:0;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px;min-width:200px;max-height:260px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;}
@@ -85,23 +82,24 @@
   .ms-drop label:hover{background:var(--surface2);}
   .ms-drop input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;flex-shrink:0;}
   .assignee-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--text-muted);}
-  .avatar{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#ffffff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;}
+  .avatar{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#1a1400;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px);}
   .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;width:480px;max-width:95vw;max-height:85vh;overflow-y:auto;}
-  .modal-title{font-family:'Sora',sans-serif;font-size:20px;margin-bottom:20px;}
+  .modal-title{font-family:'Varela Round',sans-serif;font-size:20px;margin-bottom:20px;}
   .form-group{margin-bottom:16px;}
   label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;font-weight:500;}
-  input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:6px;font-size:13px;font-family:'Sora',sans-serif;outline:none;transition:border-color .15s;}
+  input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:6px;font-size:13px;font-family:'Varela Round',sans-serif;outline:none;transition:border-color .15s;}
   input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  input[type=date]{color-scheme:dark;}
   .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;}
   .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
   .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;}
-  .stat-num{font-family:'Sora',sans-serif;font-size:32px;color:var(--accent);line-height:1;}
+  .stat-num{font-family:'Varela Round',sans-serif;font-size:32px;color:var(--accent);line-height:1;}
   .stat-label{font-size:11px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;}
   .people-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
   .person-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;align-items:center;gap:14px;position:relative;}
-  .person-avatar{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#ffffff;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Sora',sans-serif;}
+  .person-avatar{width:44px;height:44px;border-radius:50%;background:var(--accent);color:#1a1400;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Varela Round',sans-serif;}
   .person-name{font-weight:600;font-size:14px;}
   .person-role{font-size:12px;color:var(--accent);margin-top:2px;}
   .person-email{font-size:11px;color:var(--text-muted);margin-top:2px;}
@@ -110,18 +108,18 @@
   .admin-badge{font-size:9px;background:rgba(232,125,71,.2);color:var(--accent2);padding:1px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
   .empty{text-align:center;padding:60px 20px;color:var(--text-muted);}
   .empty-icon{font-size:40px;margin-bottom:12px;opacity:.4;}
-  .empty-title{font-family:'Sora',sans-serif;font-size:20px;color:var(--text-dim);margin-bottom:8px;}
+  .empty-title{font-family:'Varela Round',sans-serif;font-size:20px;color:var(--text-dim);margin-bottom:8px;}
   .empty-sub{font-size:13px;margin-bottom:20px;}
   .hidden{display:none!important;}
   .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-  .section-title{font-family:'Sora',sans-serif;font-size:18px;}
+  .section-title{font-family:'Varela Round',sans-serif;font-size:18px;}
   .tag{font-size:11px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;}
-  .ep-num{font-weight:600;color:var(--accent);font-family:'Sora',sans-serif;}
+  .ep-num{font-weight:600;color:var(--accent);font-family:'Varela Round',sans-serif;}
   .date-overdue{color:#e05050;}
   .breadcrumb{font-size:12px;color:var(--text-muted);margin-bottom:4px;}
   .breadcrumb span{color:var(--text-dim);}
   .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999;}
-  .loading-title{font-family:'Sora',sans-serif;font-size:28px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .loading-title{font-family:'Varela Round',sans-serif;font-size:28px;color:var(--accent);}
   .loading-sub{font-size:13px;color:var(--text-muted);}
   .spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
@@ -142,45 +140,39 @@
 
   /* LOGIN */
   .login-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;z-index:999;}
-  .login-title{font-family:'Sora',sans-serif;font-size:32px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .login-title{font-family:'Varela Round',sans-serif;font-size:32px;color:var(--accent);}
   .login-sub{font-size:14px;color:var(--text-muted);}
   .login-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:600px;}
   .login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;transition:all .15s;min-width:120px;}
   .login-card:hover{border-color:var(--accent);background:var(--surface2);}
-  .login-avatar{width:52px;height:52px;border-radius:50%;background:var(--accent);color:#ffffff;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;}
+  .login-avatar{width:52px;height:52px;border-radius:50%;background:var(--accent);color:#1a1400;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'Varela Round',sans-serif;}
   .login-name{font-size:14px;font-weight:600;color:var(--text);}
   .login-role{font-size:11px;color:var(--text-muted);}
-  .login-password-form{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:320px;}
-  .login-password-form input[type=password]{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:15px;text-align:center;outline:none;}
-  .login-password-form input[type=password]:focus{border-color:var(--accent);}
-  .login-password-actions{display:flex;gap:10px;width:100%;}
-  .login-password-actions .btn{flex:1;}
-  .login-error{font-size:13px;color:#e82b5f;}
   /* SEARCH */
-  .search-input{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px 7px 32px;border-radius:6px;font-size:12px;font-family:'Sora',sans-serif;outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a7568' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center;min-width:180px;}
+  .search-input{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px 7px 32px;border-radius:6px;font-size:12px;font-family:'Varela Round',sans-serif;outline:none;transition:border-color .15s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a7568' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center;min-width:180px;}
   .search-input:focus{border-color:var(--accent);}
   /* KANBAN QUICK-EDIT POPUP */
   .kpop-overlay{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;}
   .kpop{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;width:360px;max-width:95vw;}
-  .kpop-title{font-family:'Sora',sans-serif;font-size:16px;margin-bottom:16px;line-height:1.4;padding-right:32px;position:relative;}
+  .kpop-title{font-family:'Varela Round',sans-serif;font-size:16px;margin-bottom:16px;line-height:1.4;padding-right:32px;position:relative;}
   .kpop-close{position:absolute;top:0;right:0;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;line-height:1;}
   .kpop-fields{display:flex;flex-direction:column;gap:10px;}
   .kpop-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .kpop-actions{display:flex;gap:8px;margin-top:16px;justify-content:space-between;align-items:center;}
   /* UNDO BUTTON */
-  .undo-btn{position:fixed;bottom:24px;left:24px;background:#2a1a5a;border:1px solid #b090ff;color:#b090ff;border-radius:8px;padding:10px 16px;font-size:13px;font-family:'Sora',sans-serif;cursor:pointer;z-index:150;display:flex;align-items:center;gap:8px;transition:all .15s;}
+  .undo-btn{position:fixed;bottom:24px;left:24px;background:#2a1a5a;border:1px solid #b090ff;color:#b090ff;border-radius:8px;padding:10px 16px;font-size:13px;font-family:'Varela Round',sans-serif;cursor:pointer;z-index:150;display:flex;align-items:center;gap:8px;transition:all .15s;}
   .undo-btn:hover{background:#3a2a7a;border-color:#c0a0ff;}
   /* SIDEBAR LOGOUT */
   .sidebar-user{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;}
   .sidebar-user-name{flex:1;font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .logout-btn{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:'Sora',sans-serif;transition:all .15s;}
+  .logout-btn{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:'Varela Round',sans-serif;transition:all .15s;}
   .logout-btn:hover{color:var(--text);border-color:var(--text-muted);}
   /* STICKY BULK BAR */
   .bulk-bar{position:sticky;top:0;z-index:8;display:flex;gap:10px;align-items:center;background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:10px 16px;margin-bottom:12px;}
   /* COMPANY VIEW */
   .company-section{margin-bottom:32px;}
   .company-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
-  .company-name{font-family:'Sora',sans-serif;font-size:20px;}
+  .company-name{font-family:'Varela Round',sans-serif;font-size:20px;}
   .company-badge{font-size:10px;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
   .company-badge.active{background:rgba(232,197,71,.15);color:var(--accent);}
   .company-badge.done{background:rgba(74,71,64,.2);color:var(--text-dim);}
@@ -220,8 +212,8 @@
   .podcast-type-name{font-size:15px;font-weight:600;margin-bottom:4px;}
   .podcast-type-meta{font-size:12px;color:var(--text-muted);}
   .view-toggle{display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-left:auto;}
-  .view-toggle-btn{background:transparent;border:none;color:var(--text-muted);padding:6px 14px;cursor:pointer;font-family:'Sora',sans-serif;font-size:12px;transition:all .15s;}
-  .view-toggle-btn.active{background:var(--accent);color:#ffffff;font-weight:600;}
+  .view-toggle-btn{background:transparent;border:none;color:var(--text-muted);padding:6px 14px;cursor:pointer;font-family:'Varela Round',sans-serif;font-size:12px;transition:all .15s;}
+  .view-toggle-btn.active{background:var(--accent);color:#1a1400;font-weight:600;}
   .view-toggle-btn:hover:not(.active){background:var(--surface2);color:var(--text);}
   .kanban-scroll{overflow-x:auto;padding-bottom:8px;}
   .kanban-board{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr)) 48px;gap:14px;align-items:start;transition:grid-template-columns .3s;min-width:calc(220px*4 + 48px + 14px*4);}.kanban-board.show-complete{grid-template-columns:repeat(5,minmax(220px,1fr));min-width:calc(220px*5 + 14px*4);}
@@ -237,7 +229,7 @@
   .kanban-card:hover{border-color:var(--accent);}
   .kanban-card-title{font-size:13px;color:var(--text);margin-bottom:6px;line-height:1.4;}
   .kanban-card-meta{font-size:11px;color:var(--text-muted);display:flex;flex-direction:column;gap:3px;}
-  .kanban-card-ep{color:var(--accent);font-family:'Sora',sans-serif;}
+  .kanban-card-ep{color:var(--accent);font-family:'Varela Round',sans-serif;}
   .kanban-card-overdue{color:#e05050;}
   .kanban-empty{font-size:12px;color:var(--text-dim);text-align:center;padding:20px 10px;}.kanban-col.collapsed{overflow:hidden;cursor:pointer;}.kanban-col.collapsed .kanban-cards{display:none;}.kanban-col.collapsed .kanban-col-header{writing-mode:vertical-rl;height:120px;justify-content:center;padding:12px 6px;border-bottom:none;border-right:1px solid var(--border);}
 
@@ -246,23 +238,13 @@
 <body>
 
 <div class="login-screen hidden" id="loginScreen">
-  <div class="login-title">Bespoken</div>
-  <div class="login-sub" id="loginSub">Who are you?</div>
+  <div class="login-title">Bengo</div>
+  <div class="login-sub">Who are you?</div>
   <div class="login-grid" id="loginGrid"></div>
-  <div class="login-password-form hidden" id="loginPasswordForm">
-    <div class="login-avatar" id="loginPasswordAvatar"></div>
-    <div class="login-name" id="loginPasswordName"></div>
-    <input type="password" id="loginPasswordInput" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitPassword()">
-    <div class="login-error hidden" id="loginPasswordError">Incorrect password. Try again.</div>
-    <div class="login-password-actions">
-      <button class="btn btn-ghost" onclick="backToWhoAreYou()">← Back</button>
-      <button class="btn" onclick="submitPassword()">Log in</button>
-    </div>
-  </div>
 </div>
 
 <div class="loading-screen" id="loadingScreen">
-  <div class="loading-title">Bespoken</div>
+  <div class="loading-title">Bengo</div>
   <div class="spinner"></div>
   <div class="loading-sub" id="loadingSub">Connecting to workspace…</div>
 </div>
@@ -270,7 +252,7 @@
 <div class="app" id="appShell" style="display:none">
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-title">Bespoken</div>
+      <div class="logo-title">Bengo</div>
       <div class="logo-sub">Workflow Studio</div>
     </div>
     <nav class="nav">
@@ -331,10 +313,10 @@
         <div class="task-filters">
           <input class="search-input" type="text" id="searchTasks" placeholder="Search tasks…" oninput="renderAllTasks()">
           <div class="ms-wrap" id="msWrapPerson"><button class="ms-btn" id="msBtnPerson" onclick="toggleMsFilter('msDropPerson')"><span id="msLabelPerson">My Tasks</span> ▾</button><div class="ms-drop" id="msDropPerson"></div></div>
-          <div class="ms-wrap"><button class="ms-btn" id="msBtnStatus" onclick="toggleMsFilter('msDropStatus')"><span id="msLabelStatus">Open tasks</span> ▾</button><div class="ms-drop" id="msDropStatus"><div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('status')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Sora',sans-serif">Clear</button></div><label><input type="checkbox" value="To Do" onchange="onMsChange('status')"> To Do</label><label><input type="checkbox" value="In Progress" onchange="onMsChange('status')"> In Progress</label><label><input type="checkbox" value="In Review" onchange="onMsChange('status')"> In Review</label><label><input type="checkbox" value="Waiting / Blocked" onchange="onMsChange('status')"> Waiting / Blocked</label><label><input type="checkbox" value="Complete" onchange="onMsChange('status')"> Complete</label></div></div>
+          <div class="ms-wrap"><button class="ms-btn" id="msBtnStatus" onclick="toggleMsFilter('msDropStatus')"><span id="msLabelStatus">Open tasks</span> ▾</button><div class="ms-drop" id="msDropStatus"><div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('status')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Clear</button></div><label><input type="checkbox" value="To Do" onchange="onMsChange('status')"> To Do</label><label><input type="checkbox" value="In Progress" onchange="onMsChange('status')"> In Progress</label><label><input type="checkbox" value="In Review" onchange="onMsChange('status')"> In Review</label><label><input type="checkbox" value="Waiting / Blocked" onchange="onMsChange('status')"> Waiting / Blocked</label><label><input type="checkbox" value="Complete" onchange="onMsChange('status')"> Complete</label></div></div>
           <div class="ms-wrap"><button class="ms-btn" id="msBtnPodcast" onclick="toggleMsFilter('msDropPodcast')"><span id="msLabelPodcast">All Podcasts</span> ▾</button><div class="ms-drop" id="msDropPodcast"></div></div>
           <div class="ms-wrap"><button class="ms-btn" id="msBtnRole" onclick="toggleMsFilter('msDropRole')"><span id="msLabelRole">All Roles</span> ▾</button><div class="ms-drop" id="msDropRole"></div></div>
-          <button id="clearAllFiltersBtn" onclick="clearAllFilters()" style="display:none;background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:4px 2px;font-family:'Sora',sans-serif;white-space:nowrap">✕ Clear filters</button>
+          <button id="clearAllFiltersBtn" onclick="clearAllFilters()" style="display:none;background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:4px 2px;font-family:'Varela Round',sans-serif;white-space:nowrap">✕ Clear filters</button>
           <div class="view-toggle">
             <button class="view-toggle-btn active" id="toggleTable" onclick="setTaskView('table')">≡ Table</button>
             <button class="view-toggle-btn" id="toggleKanban" onclick="setTaskView('kanban')">⊞ Kanban</button>
@@ -433,7 +415,7 @@
 <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOnOverlay(event)">
   <div class="modal hidden" id="modalPodcast">
     <div class="modal-title" id="podcastModalTitle">New Podcast</div>
-    <div class="form-row"><div class="form-group"><label>Podcast Name</label><input type="text" id="f-podName" placeholder="e.g. The Bespoken Show"></div><div class="form-group"><label>Podcast Type</label><select id="f-podType"><option>Interview</option><option>Solo</option><option>Panel</option><option>Scripted</option><option>Full Production</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label>Podcast Name</label><input type="text" id="f-podName" placeholder="e.g. The Bengo Show"></div><div class="form-group"><label>Podcast Type</label><select id="f-podType"><option>Interview</option><option>Solo</option><option>Panel</option><option>Scripted</option><option>Full Production</option></select></div></div>
     <div class="form-row"><div class="form-group"><label>Client / Company</label><input type="text" id="f-podCompany"></div><div class="form-group"><label>Contact Name</label><input type="text" id="f-podContact"></div></div>
     <div class="form-row"><div class="form-group"><label>Executive Producer</label><select id="f-podEP"></select></div><div class="form-group"><label>Producer</label><select id="f-podProducer"></select></div></div>
     <div class="form-row"><div class="form-group"><label>Assistant Producer (optional)</label><select id="f-podAP"></select></div><div class="form-group"><label>Editor</label><select id="f-podEditor"></select></div></div>
@@ -472,7 +454,6 @@
     <div class="modal-title" id="personModalTitle">Add Person</div>
     <div class="form-row"><div class="form-group"><label>Full Name</label><input type="text" id="f-personName"></div><div class="form-group"><label>Email</label><input type="email" id="f-personEmail"></div></div>
     <div class="form-row"><div class="form-group"><label>Role</label><select id="f-personRole"></select></div><div class="form-group"><label>App Access</label><select id="f-personUserRole"><option value="User">User</option><option value="Admin">Admin</option></select></div></div>
-    <div class="form-row"><div class="form-group"><label>Password</label><input type="password" id="f-personPassword" placeholder="Leave blank to keep unchanged"></div></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="savePersonBtn" onclick="savePerson()">Save</button></div>
   </div>
 
@@ -686,9 +667,8 @@
 </div>
 
 <script>
-// ⚠️ BESPOKEN: Replace these with the Bespoken Supabase project credentials
-const SUPA_URL='https://jtijykmecahhhsnmeevx.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0aWp5a21lY2FoaGhzbm1lZXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0OTU0NzgsImV4cCI6MjEwMTA3MTQ3OH0.xLcsIohMFI_HB3ThsFqtpQx_je9kkoDtrrAl4KHPfpY';
+const SUPA_URL='https://uxgspzloagefqqvqfqlw.supabase.co';
+const SUPA_KEY='sb_publishable_x1Lik-IYCVs3aCYGoQlmpg_mn2Qtd7m';
 
 async function sb(method,table,body,params){
   let url=`${SUPA_URL}/rest/v1/${table}`;
@@ -853,8 +833,8 @@ async function loadAll(){
 const BUILT_IN_TASK_ROLES=['Executive Producer','Producer','Editor','Marketer','Accounts'];
 const BUILT_IN_PERSON_ROLES=['Executive Producer','Producer','Editor','Marketer','Accounts','Admin'];
 
-function getCustomRoles(){return JSON.parse(localStorage.getItem('bespoken_custom_roles')||'[]');}
-function saveCustomRoles(roles){localStorage.setItem('bespoken_custom_roles',JSON.stringify(roles));}
+function getCustomRoles(){return JSON.parse(localStorage.getItem('bengo_custom_roles')||'[]');}
+function saveCustomRoles(roles){localStorage.setItem('bengo_custom_roles',JSON.stringify(roles));}
 function getTaskRoles(){return[...BUILT_IN_TASK_ROLES,...getCustomRoles().filter(r=>!BUILT_IN_TASK_ROLES.includes(r))];}
 function getPersonRoles(){return[...BUILT_IN_PERSON_ROLES,...getCustomRoles().filter(r=>!BUILT_IN_PERSON_ROLES.includes(r))];}
 function roleOptions(roles,selected){return roles.map(r=>`<option${r===selected?' selected':''}>${r}</option>`).join('');}
@@ -868,16 +848,16 @@ const DEFAULT_TYPE_DESCRIPTIONS={
 };
 
 function getPodcastTypes(){
-  const stored=JSON.parse(localStorage.getItem('bespoken_podcast_types')||'{}');
+  const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
   const hardTypes=Object.keys(TEMPLATES);
   const customTypes=Object.keys(stored).filter(t=>!hardTypes.includes(t));
   return[...hardTypes,...customTypes].map(t=>({name:t,description:stored[t]?.description||DEFAULT_TYPE_DESCRIPTIONS[t]||''}));
 }
 
 function savePodcastTypeData(name,data){
-  const stored=JSON.parse(localStorage.getItem('bespoken_podcast_types')||'{}');
+  const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
   stored[name]={...stored[name],...data};
-  localStorage.setItem('bespoken_podcast_types',JSON.stringify(stored));
+  localStorage.setItem('bengo_podcast_types',JSON.stringify(stored));
 }
 
 function getTemplatesForType(type){
@@ -944,10 +924,10 @@ function renderDashboard(){
   const rows=open.length?open.map(t=>{
     const ep=epById(t.episode_id),pod=ep?podById(ep.podcast_id):null,person=t.assigned_to?pById(t.assigned_to):null;
     const od=t.due_date&&new Date(t.due_date)<today;
-    return`<tr class="clickable" onclick="openEditTaskModal('${t.id}')">
+    return`<tr class="clickable" onclick="navigate('episode-tasks','${t.episode_id}')">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="task-select-cb" data-id="${t.id}" onclick="onTaskCheckbox()" style="accent-color:var(--accent)"></td>
       <td>${pod?pod.name:'—'}</td>
-      <td onclick="event.stopPropagation();navigate('episode-tasks','${t.episode_id}')" style="cursor:pointer;color:var(--accent)">${ep?`<span class="ep-num">${ep.default_title||'E'+ep.number}</span><span style="font-size:11px;margin-left:4px">${ep.title||''}</span>`:'—'}</td>
+      <td>${ep?`<span class="ep-num">${ep.default_title||'E'+ep.number}</span><span style="color:var(--text-muted);font-size:11px;margin-left:4px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">${ep.title||''}</span>`:'—'}</td>
       <td>${t.name}</td>
       <td>${person?`<span class="assignee-chip"><span class="avatar">${ini(person.name)}</span>${person.name}</span>`:'<span style="color:var(--text-muted)">Unassigned</span>'}</td>
       <td class="${od?'date-overdue':''}">${formatDate(t.due_date)}</td>
@@ -1127,7 +1107,7 @@ function renderEpisodes(){
   if(!eps.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">📺</div><div class="empty-title">No episodes yet</div><div class="empty-sub">Create an episode — tasks will generate automatically.</div></div></td></tr>`;return;}
   tbody.innerHTML=eps.map(ep=>{
     const prog=epProg(ep.id),status=epStatus(ep.id),od=ep.launch_date&&new Date(ep.launch_date)<new Date()&&status!=='Complete';
-    return`<tr><td onclick="navigate('episode-tasks','${ep.id}')" style="cursor:pointer"><span class="ep-num">${ep.default_title||'E'+ep.number}</span></td><td><input value="${ep.title||''}" placeholder="${ep.default_title||'E'+ep.number}" onclick="event.stopPropagation()" onblur="saveEpTitle('${ep.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="background:none;border:none;color:${ep.title?'var(--text)':'var(--text-muted)'};font-size:13px;font-family:'Sora',sans-serif;width:100%;outline:none;padding:2px 4px;border-radius:4px" onfocus="this.style.background='var(--surface2)';this.style.color='var(--text)'"></td><td class="${od?'date-overdue':''}" onclick="navigate('episode-tasks','${ep.id}')" style="cursor:pointer">${formatDate(ep.launch_date)}</td><td onclick="navigate('episode-tasks','${ep.id}')" style="cursor:pointer"><div style="display:flex;align-items:center;gap:8px"><div class="progress-bar"><div class="progress-fill" style="width:${prog}%"></div></div><span style="font-size:11px;color:var(--text-muted)">${prog}%</span></div></td><td onclick="navigate('episode-tasks','${ep.id}')" style="cursor:pointer"><span class="status-pill ${scls(status)}">${status}</span></td><td><div style="display:flex;gap:6px"><div class="icon-btn" onclick="openRescheduleModal('${ep.id}')" title="Reschedule">📅</div><div class="icon-btn danger" onclick="deleteEpisode('${ep.id}')">🗑</div></div></td></tr>`;
+    return`<tr><td onclick="navigate('episode-tasks','${ep.id}')" style="cursor:pointer"><span class="ep-num">${ep.default_title||'E'+ep.number}</span></td><td><input value="${ep.title||''}" placeholder="${ep.default_title||'E'+ep.number}" onclick="event.stopPropagation()" onblur="saveEpTitle('${ep.id}',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="background:none;border:none;color:${ep.title?'var(--text)':'var(--text-muted)'};font-size:13px;font-family:'Varela Round',sans-serif;width:100%;outline:none;padding:2px 4px;border-radius:4px" onfocus="this.style.background='var(--surface2)';this.style.color='var(--text)'"></td><td class="${od?'date-overdue':''}" onclick="navigate('episode-tasks','${ep.id}')" style="cursor:pointer">${formatDate(ep.launch_date)}</td><td onclick="navigate('episode-tasks','${ep.id}')" style="cursor:pointer"><div style="display:flex;align-items:center;gap:8px"><div class="progress-bar"><div class="progress-fill" style="width:${prog}%"></div></div><span style="font-size:11px;color:var(--text-muted)">${prog}%</span></div></td><td onclick="navigate('episode-tasks','${ep.id}')" style="cursor:pointer"><span class="status-pill ${scls(status)}">${status}</span></td><td><div style="display:flex;gap:6px"><div class="icon-btn" onclick="openRescheduleModal('${ep.id}')" title="Reschedule">📅</div><div class="icon-btn danger" onclick="deleteEpisode('${ep.id}')">🗑</div></div></td></tr>`;
   }).join('');
 }
 
@@ -1274,17 +1254,20 @@ function updateMsLabel(type){
 }
 
 function populateTaskFilters(){
-  const clearLink=(type)=>`<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('${type}')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Sora',sans-serif">Clear</button></div>`;
+  const clearLink=(type)=>`<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('${type}')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Clear</button></div>`;
+  // Podcast dropdown
   document.getElementById('msDropPodcast').innerHTML=
     clearLink('podcast')+
     `<label><input type="checkbox" value="__none__"${filterPodcasts.has('__none__')?' checked':''} onchange="onMsChange('podcast')"> — Standalone —</label>`+
     (db.podcasts.length?`<hr style="margin:4px 0;border:none;border-top:1px solid var(--border)">`:'')+
     db.podcasts.map(p=>`<label><input type="checkbox" value="${p.id}"${filterPodcasts.has(p.id)?' checked':''} onchange="onMsChange('podcast')"> ${p.name||p.company||'Untitled'}</label>`).join('');
+  // Role dropdown
   document.getElementById('msDropRole').innerHTML=
     clearLink('role')+
     getTaskRoles().map(r=>`<label><input type="checkbox" value="${r}"${filterRoles.has(r)?' checked':''} onchange="onMsChange('role')"> ${r}</label>`).join('');
+  // Person dropdown
   document.getElementById('msDropPerson').innerHTML=
-    `<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('person')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Sora',sans-serif">Show everyone</button></div>`+
+    `<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('person')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Show everyone</button></div>`+
     db.people.filter(p=>p.active!==false).map(p=>
       `<label><input type="checkbox" value="${p.id}"${filterPersonIds.has(p.id)?' checked':''} onchange="onMsChange('person')"> ${p.name}</label>`
     ).join('');
@@ -1981,13 +1964,13 @@ function savePodcastType(){
   const name=document.getElementById('f-ptName').value.trim();
   const desc=document.getElementById('f-ptDesc').value.trim();
   if(!name){notify('Type name required',true);return;}
-  const stored=JSON.parse(localStorage.getItem('bespoken_podcast_types')||'{}');
+  const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
   if(!_editingPTName){
     const all=getPodcastTypes().map(t=>t.name);
     if(all.includes(name)){notify('A type with that name already exists',true);return;}
   }
   stored[_editingPTName||name]={description:desc};
-  localStorage.setItem('bespoken_podcast_types',JSON.stringify(stored));
+  localStorage.setItem('bengo_podcast_types',JSON.stringify(stored));
   closeModal();renderSettingsPodcastTypes();populatePodcastTypeDropdown(name);notify(_editingPTName?'Type updated':'Type added');
 }
 
@@ -1995,9 +1978,9 @@ function deletePodcastType(encodedName){
   const name=decodeURIComponent(encodedName);
   if(db.podcasts.some(p=>p.type===name)){notify(`Can't delete — ${db.podcasts.filter(p=>p.type===name).length} podcast(s) use this type`,true);return;}
   if(!confirm(`Delete type "${name}"? Any saved tasks for it will also be removed from your templates.`))return;
-  const stored=JSON.parse(localStorage.getItem('bespoken_podcast_types')||'{}');
+  const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
   delete stored[name];
-  localStorage.setItem('bespoken_podcast_types',JSON.stringify(stored));
+  localStorage.setItem('bengo_podcast_types',JSON.stringify(stored));
   db.taskTemplates=db.taskTemplates.filter(t=>t.podcast_type!==name);
   api.del('task_templates',`podcast_type=eq.${encodeURIComponent(name)}`).catch(()=>{});
   renderSettingsPodcastTypes();notify('Type deleted');
@@ -2296,8 +2279,8 @@ async function saveEpisode(){
   finally{btn.disabled=false;btn.textContent='Create Episode + Tasks';}
 }
 
-function openNewPersonModal(){editingPersonId=null;document.getElementById('personModalTitle').textContent='Add Person';['f-personName','f-personEmail','f-personPassword'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),'Producer');document.getElementById('f-personUserRole').value='User';openModal('modalPerson');}
-function openEditPersonModal(id){editingPersonId=id;const p=pById(id);if(!p)return;document.getElementById('personModalTitle').textContent='Edit Person';document.getElementById('f-personName').value=p.name;document.getElementById('f-personEmail').value=p.email||'';document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),p.role);document.getElementById('f-personUserRole').value=p.user_role||'User';document.getElementById('f-personPassword').value='';openModal('modalPerson');}
+function openNewPersonModal(){editingPersonId=null;document.getElementById('personModalTitle').textContent='Add Person';['f-personName','f-personEmail'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),'Producer');document.getElementById('f-personUserRole').value='User';openModal('modalPerson');}
+function openEditPersonModal(id){editingPersonId=id;const p=pById(id);if(!p)return;document.getElementById('personModalTitle').textContent='Edit Person';document.getElementById('f-personName').value=p.name;document.getElementById('f-personEmail').value=p.email||'';document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),p.role);document.getElementById('f-personUserRole').value=p.user_role||'User';openModal('modalPerson');}
 
 async function savePerson(){
   const name=document.getElementById('f-personName').value.trim(),email=document.getElementById('f-personEmail').value.trim();
@@ -2305,8 +2288,6 @@ async function savePerson(){
   const btn=document.getElementById('savePersonBtn');btn.disabled=true;setSync('syncing');
   try{
     const data={name,email,role:document.getElementById('f-personRole').value,user_role:document.getElementById('f-personUserRole').value,active:true};
-    const passwordRaw=document.getElementById('f-personPassword').value.trim();
-    if(passwordRaw) data.password_hash=await sha256(passwordRaw);
     if(editingPersonId){await api.patch('people',editingPersonId,data);Object.assign(pById(editingPersonId),data);}
     else{data.id=uid();await api.post('people',data);db.people.push(data);}
     setSync('live');closeModal();renderPeople();populateUserSwitcher();notify(editingPersonId?'Person updated':'Person added!');
@@ -2360,7 +2341,7 @@ async function saveTask(){
         const podLabel=pod?pod.name:'';
         sendEmail(newPerson.email,
           'You\'ve been assigned a task — '+t.name,
-          `<p>Hi ${newPerson.name},</p><p>You've been assigned a task:</p><p style="font-size:16px;font-weight:600">${t.name}</p><p>${podLabel}${epLabel?' · '+epLabel:''}</p>${t.due_date?'<p>Due: '+formatDate(t.due_date)+'</p>':''}<p>Log in to view it: <a href="https://bespokenworkflow.netlify.app">Bespoken Workflow</a></p>`
+          `<p>Hi ${newPerson.name},</p><p>You've been assigned a task:</p><p style="font-size:16px;font-weight:600">${t.name}</p><p>${podLabel}${epLabel?' · '+epLabel:''}</p>${t.due_date?'<p>Due: '+formatDate(t.due_date)+'</p>':''}<p>Log in to the Bengo workflow app to view it.</p>`
         );
       }
     }
@@ -2940,8 +2921,7 @@ async function applyBulkUpdate(){
 // EMAIL NOTIFICATIONS (Resend)
 // ============================================================
 const STATUSES=['To Do','In Progress','In Review','Waiting / Blocked','Complete'];
-// ⚠️ BESPOKEN: Replace with Bespoken's Resend API key and verified sender address
-const FROM_EMAIL = 'onboarding@resend.dev'; // Switch to workflow@bespoken.media once domain verified
+const FROM_EMAIL = 'onboarding@resend.dev'; // Temporary -- swap to workflow@bengomedia.com once domain is verified
 
 async function sendEmail(to, subject, html){
   try{
@@ -2978,7 +2958,7 @@ async function notifyEpisodeTeam(){
     const taskList = byPerson[personId].map(function(t){
       return '<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">'+t.name+'</td><td style="padding:6px 12px;border-bottom:1px solid #eee;color:#888">'+formatDate(t.due_date)+'</td><td style="padding:6px 12px;border-bottom:1px solid #eee">'+t.status+'</td></tr>';
     }).join('');
-    const html = '<div style="font-family:sans-serif;max-width:600px"><h2 style="color:#E82B5F">Bespoken Workflow</h2><p>Hi '+person.name.split(' ')[0]+',</p><p>Here are your open tasks for <strong>'+(ep.title||ep.default_title||'Episode '+ep.number)+'</strong> ('+pod.name+'):</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><thead><tr><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Task</th><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Due</th><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Status</th></tr></thead><tbody>'+taskList+'</tbody></table><p style="color:#888;font-size:12px">Bespoken Media Workflow</p></div>';
+    const html = '<div style="font-family:sans-serif;max-width:600px"><h2 style="color:#e8c547">Bengo Workflow</h2><p>Hi '+person.name.split(' ')[0]+',</p><p>Here are your open tasks for <strong>'+(ep.title||ep.default_title||'Episode '+ep.number)+'</strong> ('+pod.name+'):</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><thead><tr><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Task</th><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Due</th><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Status</th></tr></thead><tbody>'+taskList+'</tbody></table><p style="color:#888;font-size:12px">Bengo Media Workflow</p></div>';
     const ok = await sendEmail(person.email, 'Your tasks: '+pod.name+' — '+(ep.title||ep.default_title||'Ep '+ep.number), html);
     if(ok) sent++;
   }
@@ -3013,8 +2993,8 @@ async function sendUrgentReminders(){
       const dd=new Date(t.due_date),isOverdue=dd<today;
       return '<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">'+t.name+'</td><td style="padding:6px 12px;border-bottom:1px solid #eee">'+(pod?pod.name:'')+'</td><td style="padding:6px 12px;border-bottom:1px solid #eee;color:'+(isOverdue?'#e05050':'#888')+'">'+formatDate(t.due_date)+(isOverdue?' ⚠ OVERDUE':'')+'</td></tr>';
     }).join('');
-    const html = '<div style="font-family:sans-serif;max-width:600px"><h2 style="color:#E82B5F">⏰ Task Reminders — Bespoken Workflow</h2><p>Hi '+person.name.split(' ')[0]+',</p><p>You have <strong>'+byPerson[personId].length+' task'+(byPerson[personId].length!==1?'s':'')+' due within 3 days:</strong></p><table style="width:100%;border-collapse:collapse;margin:16px 0"><thead><tr><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Task</th><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Podcast</th><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Due</th></tr></thead><tbody>'+taskList+'</tbody></table><p style="color:#888;font-size:12px">Bespoken Media Workflow</p></div>';
-    const ok = await sendEmail(person.email, '⏰ '+byPerson[personId].length+' task'+(byPerson[personId].length!==1?'s':'')+' due soon — Bespoken Workflow', html);
+    const html = '<div style="font-family:sans-serif;max-width:600px"><h2 style="color:#e8c547">⏰ Task Reminders — Bengo Workflow</h2><p>Hi '+person.name.split(' ')[0]+',</p><p>You have <strong>'+byPerson[personId].length+' task'+(byPerson[personId].length!==1?'s':'')+' due within 3 days:</strong></p><table style="width:100%;border-collapse:collapse;margin:16px 0"><thead><tr><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Task</th><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Podcast</th><th style="text-align:left;padding:6px 12px;background:#f5f5f5">Due</th></tr></thead><tbody>'+taskList+'</tbody></table><p style="color:#888;font-size:12px">Bengo Media Workflow</p></div>';
+    const ok = await sendEmail(person.email, '⏰ '+byPerson[personId].length+' task'+(byPerson[personId].length!==1?'s':'')+' due soon — Bengo Workflow', html);
     if(ok) sent++;
   }
   if(btn){btn.disabled=false;btn.textContent='⏰ Send Reminders';}
@@ -3225,11 +3205,13 @@ async function saveReschedulePodcast(){
     const eps = db.episodes.filter(e => e.podcast_id === reschedulingPodcastId);
     let taskCount = 0;
     for(const ep of eps){
+      // Shift episode launch date
       if(ep.launch_date){
         const newDate = addDays(ep.launch_date, diff);
         await api.patch('episodes', ep.id, { launch_date: newDate });
         ep.launch_date = newDate;
       }
+      // Shift all task due dates for this episode
       const tasks = epTasks(ep.id);
       for(const t of tasks){
         if(!t.due_date) continue;
@@ -3256,54 +3238,9 @@ async function saveReschedulePodcast(){
 // ============================================================
 // LOGIN
 // ============================================================
-async function sha256(str){
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-let pendingLoginPersonId=null;
-
 function showLoginScreen(){
-  document.getElementById('loginGrid').innerHTML=db.people.map(p=>`<div class="login-card" onclick="promptPassword('${p.id}')"><div class="login-avatar">${ini(p.name)}</div><div class="login-name">${p.name}</div><div class="login-role">${p.role}</div></div>`).join('');
-  document.getElementById('loginGrid').classList.remove('hidden');
-  document.getElementById('loginPasswordForm').classList.add('hidden');
-  document.getElementById('loginSub').textContent='Who are you?';
+  document.getElementById('loginGrid').innerHTML=db.people.map(p=>`<div class="login-card" onclick="login('${p.id}')"><div class="login-avatar">${ini(p.name)}</div><div class="login-name">${p.name}</div><div class="login-role">${p.role}</div></div>`).join('');
   document.getElementById('loginScreen').classList.remove('hidden');
-}
-
-function promptPassword(personId){
-  const person=pById(personId);if(!person)return;
-  pendingLoginPersonId=personId;
-  if(!person.password_hash){login(personId);return;}
-  document.getElementById('loginGrid').classList.add('hidden');
-  document.getElementById('loginPasswordForm').classList.remove('hidden');
-  document.getElementById('loginSub').textContent='Welcome back';
-  document.getElementById('loginPasswordAvatar').textContent=ini(person.name);
-  document.getElementById('loginPasswordName').textContent=person.name;
-  document.getElementById('loginPasswordInput').value='';
-  document.getElementById('loginPasswordError').classList.add('hidden');
-  setTimeout(()=>document.getElementById('loginPasswordInput').focus(),50);
-}
-
-function backToWhoAreYou(){
-  pendingLoginPersonId=null;
-  document.getElementById('loginGrid').classList.remove('hidden');
-  document.getElementById('loginPasswordForm').classList.add('hidden');
-  document.getElementById('loginSub').textContent='Who are you?';
-}
-
-async function submitPassword(){
-  const person=pById(pendingLoginPersonId);if(!person)return;
-  const raw=document.getElementById('loginPasswordInput').value;
-  if(!raw){document.getElementById('loginPasswordError').classList.remove('hidden');return;}
-  const hash=await sha256(raw);
-  if(hash===person.password_hash){
-    login(pendingLoginPersonId);
-  }else{
-    document.getElementById('loginPasswordError').classList.remove('hidden');
-    document.getElementById('loginPasswordInput').value='';
-    document.getElementById('loginPasswordInput').focus();
-  }
 }
 
 function login(personId){
