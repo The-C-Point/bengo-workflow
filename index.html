@@ -90,7 +90,7 @@
   label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;font-weight:500;}
   input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:6px;font-size:13px;font-family:'Varela Round',sans-serif;outline:none;transition:border-color .15s;}
   input:focus,select:focus,textarea:focus{border-color:var(--accent);}
-  input[type=date]{color-scheme:light;}
+  input[type=date]{color-scheme:dark;}
   .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;}
   .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
@@ -491,6 +491,30 @@
     </div>
   </div>
 
+  <div class="modal hidden" id="modalReschedulePodcast">
+    <div class="modal-title">Reschedule Entire Podcast</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px" id="f-rpPodName"></p>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">All episode launch dates and every task due date will shift by the same amount.</p>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Direction</label>
+        <select id="f-rpDir" onchange="previewReschedulePodcast()">
+          <option value="1">Delay (push forward)</option>
+          <option value="-1">Bring forward (pull back)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Days</label>
+        <input type="number" id="f-rpDays" min="1" value="7" placeholder="e.g. 14" oninput="previewReschedulePodcast()">
+      </div>
+    </div>
+    <div id="rpPreview" style="margin-top:4px;font-size:12px;color:var(--accent);min-height:18px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn" id="saveRpBtn" onclick="saveReschedulePodcast()">Reschedule All Episodes + Tasks</button>
+    </div>
+  </div>
+
   <div class="modal hidden" id="modalAdhocTask">
     <div class="modal-title">Add Ad Hoc Task</div>
     <div class="form-group"><label>Task Name</label><input type="text" id="f-adhocName" placeholder="What needs doing?"></div>
@@ -883,7 +907,7 @@ function navigate(view,id){
   else if(view==='contact'){if(id)renderContactDetail(id);}
   else if(view==='podcasts'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewPodcastModal()">+ New Podcast</button>';renderPodcasts();}
   else if(view==='dashboard'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" id="sendRemindersBtn" onclick="sendUrgentReminders()">⏰ Send Reminders</button>';renderDashboard();}
-  else if(view==='episodes'){if(id)currentPodcastId=id;renderEpisodes();}
+  else if(view==='episodes'){if(id)currentPodcastId=id;renderEpisodes();document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" onclick="openReschedulePodcastModal(currentPodcastId)">📅 Reschedule Podcast</button>';}
   else if(view==='episode-tasks'){if(id)currentEpisodeId=id;renderEpisodeTasks();document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" id="notifyEpisodeBtn" onclick="notifyEpisodeTeam()" style="margin-right:8px">📧 Notify Team</button><button class="btn" onclick="openAdhocTaskModal()">+ Ad Hoc Task</button>';}
   else if(view==='tasks'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" onclick="openImportTodosModal()">↑ Import</button>';populateTaskFilters();renderAllTasks();}
   else if(view==='gantt'){populateGanttFilter();renderGantt();}
@@ -1020,7 +1044,7 @@ function renderPodcasts(){
     const color=pct===100?'var(--complete-text)':pct>50?'var(--accent)':'var(--accent2)';
     const folderBtn=p.google_folder_url?`<a href="${p.google_folder_url}" target="_blank" onclick="event.stopPropagation()" title="Open Google Drive folder" style="color:var(--accent);font-size:13px;text-decoration:none;margin-left:6px">📁</a>`:'';
     return`<div class="card" onclick="navigate('episodes','${p.id}')">
-      <div class="card-actions"><div class="icon-btn" onclick="event.stopPropagation();openEditPodcastModal('${p.id}')">✏️</div><div class="icon-btn" onclick="event.stopPropagation();openBatchEpisodesModal('${p.id}')" title="Add batch of episodes">➕</div><div class="icon-btn danger" onclick="event.stopPropagation();deletePodcast('${p.id}')">🗑</div></div>
+      <div class="card-actions"><div class="icon-btn" onclick="event.stopPropagation();openEditPodcastModal('${p.id}')">✏️</div><div class="icon-btn" onclick="event.stopPropagation();openBatchEpisodesModal('${p.id}')" title="Add batch of episodes">➕</div><div class="icon-btn" onclick="event.stopPropagation();openReschedulePodcastModal('${p.id}')" title="Reschedule all episodes">📅</div><div class="icon-btn danger" onclick="event.stopPropagation();deletePodcast('${p.id}')">🗑</div></div>
       <div class="card-label">${p.company||''} ${p.contact?'· '+p.contact:''}${folderBtn}</div>
       <div class="card-title">${p.name}</div>
       <div class="card-meta">
@@ -3137,6 +3161,81 @@ async function saveReschedule(){
   } finally {
     btn.disabled = false;
     btn.textContent = 'Reschedule + Shift Tasks';
+  }
+}
+
+let reschedulingPodcastId = null;
+
+function openReschedulePodcastModal(podId){
+  reschedulingPodcastId = podId;
+  const pod = podById(podId);
+  if(!pod) return;
+  const eps = db.episodes.filter(e => e.podcast_id === podId);
+  const taskCount = eps.reduce((n,e) => n + epTasks(e.id).length, 0);
+  document.getElementById('f-rpPodName').textContent = pod.name + ' — ' + eps.length + ' episode' + (eps.length!==1?'s':'') + ', ' + taskCount + ' tasks';
+  document.getElementById('f-rpDays').value = '7';
+  document.getElementById('f-rpDir').value = '1';
+  document.getElementById('rpPreview').textContent = '';
+  previewReschedulePodcast();
+  openModal('modalReschedulePodcast');
+}
+
+function previewReschedulePodcast(){
+  const pod = podById(reschedulingPodcastId);
+  if(!pod) return;
+  const days = parseInt(document.getElementById('f-rpDays').value) || 0;
+  const dir = parseInt(document.getElementById('f-rpDir').value);
+  const eps = db.episodes.filter(e => e.podcast_id === reschedulingPodcastId);
+  const taskCount = eps.reduce((n,e) => n + epTasks(e.id).length, 0);
+  const el = document.getElementById('rpPreview');
+  if(!days){ el.textContent = ''; return; }
+  const dirLabel = dir > 0 ? 'forward' : 'back';
+  el.textContent = `↻ ${eps.length} episode${eps.length!==1?'s':''} and ${taskCount} task${taskCount!==1?'s':''} will shift ${days} day${days!==1?'s':''} ${dirLabel}.`;
+}
+
+async function saveReschedulePodcast(){
+  const pod = podById(reschedulingPodcastId);
+  if(!pod) return;
+  const days = parseInt(document.getElementById('f-rpDays').value);
+  if(!days || days < 1){ alert('Please enter a number of days'); return; }
+  const dir = parseInt(document.getElementById('f-rpDir').value);
+  const diff = days * dir;
+
+  const btn = document.getElementById('saveRpBtn');
+  btn.disabled = true; btn.textContent = 'Rescheduling…';
+  setSync('syncing');
+
+  try {
+    const eps = db.episodes.filter(e => e.podcast_id === reschedulingPodcastId);
+    let taskCount = 0;
+    for(const ep of eps){
+      // Shift episode launch date
+      if(ep.launch_date){
+        const newDate = addDays(ep.launch_date, diff);
+        await api.patch('episodes', ep.id, { launch_date: newDate });
+        ep.launch_date = newDate;
+      }
+      // Shift all task due dates for this episode
+      const tasks = epTasks(ep.id);
+      for(const t of tasks){
+        if(!t.due_date) continue;
+        const shifted = addDays(t.due_date, diff);
+        await api.patch('tasks', t.id, { due_date: shifted });
+        t.due_date = shifted;
+        taskCount++;
+      }
+    }
+    setSync('live');
+    closeModal();
+    if(currentView === 'episodes') renderEpisodes();
+    else renderPodcasts();
+    const dirLabel = diff > 0 ? 'forward' : 'back';
+    notify(`Podcast rescheduled — ${eps.length} episodes and ${taskCount} tasks shifted ${Math.abs(diff)} day${Math.abs(diff)!==1?'s':''} ${dirLabel}`);
+  } catch(e){
+    setSync('error');
+    notify('Reschedule failed: ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Reschedule All Episodes + Tasks';
   }
 }
 
