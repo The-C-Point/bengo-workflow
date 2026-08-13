@@ -72,6 +72,15 @@
   .progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s;}
   .task-filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
   .filter-select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;font-size:12px;font-family:'Varela Round',sans-serif;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px;}
+  .ms-wrap{position:relative;display:inline-block;}
+  .ms-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer;font-size:12px;min-width:120px;text-align:left;display:inline-flex;align-items:center;justify-content:space-between;gap:8px;font-family:'Varela Round',sans-serif;white-space:nowrap;}
+  .ms-btn:hover{border-color:var(--accent);}
+  .ms-btn.has-filter{border-color:var(--accent);background:var(--surface2);}
+  .ms-drop{position:absolute;top:calc(100% + 4px);left:0;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px;min-width:200px;max-height:260px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;}
+  .ms-drop.open{display:block;}
+  .ms-drop label{display:flex;align-items:center;gap:8px;padding:5px 8px;cursor:pointer;border-radius:5px;font-size:13px;color:var(--text);font-weight:normal;text-transform:none;letter-spacing:0;}
+  .ms-drop label:hover{background:var(--surface2);}
+  .ms-drop input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;flex-shrink:0;}
   .assignee-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--text-muted);}
   .avatar{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#1a1400;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px);}
@@ -251,9 +260,7 @@
       <div class="nav-item" onclick="navigate('contacts')" id="nav-contacts"><span class="nav-icon">👤</span> Contacts</div>
       <div class="nav-item" onclick="navigate('podcasts')" id="nav-podcasts"><span class="nav-icon">🎙</span> Podcasts</div>
       <div class="nav-item" onclick="navigate('tasks')" id="nav-tasks"><span class="nav-icon">✅</span> All Tasks</div>
-      <div class="nav-item" onclick="navigate('mytasks')" id="nav-mytasks"><span class="nav-icon">👤</span> My Tasks</div>
       <div class="nav-item" onclick="navigate('gantt')" id="nav-gantt"><span class="nav-icon">📊</span> Gantt</div>
-      <div class="nav-item" onclick="navigate('todos')" id="nav-todos"><span class="nav-icon">📝</span> To-Do</div>
       <div class="nav-item" onclick="navigate('settings')" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</div>
     </nav>
     <div class="user-switcher">
@@ -304,13 +311,15 @@
       <div id="view-tasks" class="hidden">
         <div class="task-filters">
           <input class="search-input" type="text" id="searchTasks" placeholder="Search tasks…" oninput="renderAllTasks()">
-          <select class="filter-select" id="filterStatus" onchange="renderAllTasks()"><option value="">All Statuses</option><option>To Do</option><option>In Progress</option><option>In Review</option><option>Waiting / Blocked</option><option>Complete</option></select>
-          <select class="filter-select" id="filterPodcast" onchange="renderAllTasks()"><option value="">All Podcasts</option></select>
-          <select class="filter-select" id="filterRole" onchange="renderAllTasks()"><option value="">All Roles</option></select>
+          <div class="ms-wrap" id="msWrapPerson"><button class="ms-btn" id="msBtnPerson" onclick="toggleMsFilter('msDropPerson')"><span id="msLabelPerson">My Tasks</span> ▾</button><div class="ms-drop" id="msDropPerson"></div></div>
+          <div class="ms-wrap"><button class="ms-btn" id="msBtnStatus" onclick="toggleMsFilter('msDropStatus')"><span id="msLabelStatus">Open tasks</span> ▾</button><div class="ms-drop" id="msDropStatus"><label><input type="checkbox" value="To Do" onchange="onMsChange('status')"> To Do</label><label><input type="checkbox" value="In Progress" onchange="onMsChange('status')"> In Progress</label><label><input type="checkbox" value="In Review" onchange="onMsChange('status')"> In Review</label><label><input type="checkbox" value="Waiting / Blocked" onchange="onMsChange('status')"> Waiting / Blocked</label><label><input type="checkbox" value="Complete" onchange="onMsChange('status')"> Complete</label></div></div>
+          <div class="ms-wrap"><button class="ms-btn" id="msBtnPodcast" onclick="toggleMsFilter('msDropPodcast')"><span id="msLabelPodcast">All Podcasts</span> ▾</button><div class="ms-drop" id="msDropPodcast"></div></div>
+          <div class="ms-wrap"><button class="ms-btn" id="msBtnRole" onclick="toggleMsFilter('msDropRole')"><span id="msLabelRole">All Roles</span> ▾</button><div class="ms-drop" id="msDropRole"></div></div>
           <div class="view-toggle">
             <button class="view-toggle-btn active" id="toggleTable" onclick="setTaskView('table')">≡ Table</button>
             <button class="view-toggle-btn" id="toggleKanban" onclick="setTaskView('kanban')">⊞ Kanban</button>
           </div>
+          <button class="btn" onclick="openAllTaskAdd()" style="margin-left:auto;padding:7px 14px;font-size:12px">+ Add Task</button>
         </div>
         <div id="tasksTableView">
         <div id="bulkActionsBar" class="bulk-bar hidden">
@@ -497,6 +506,34 @@
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
       <button class="btn" id="saveAdhocBtn" onclick="saveAdhocTask()">Add Task</button>
     </div>
+  </div>
+
+  <div class="modal hidden" id="modalAllTaskAdd">
+    <div class="modal-title">Add Task</div>
+    <div class="form-group"><label>Task Name</label><input type="text" id="f-atName" placeholder="What needs doing?"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Assigned To</label><select id="f-atAssigned"></select></div>
+      <div class="form-group"><label>Role (optional)</label><select id="f-atRole"></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Due Date</label><input type="date" id="f-atDue"></div>
+      <div class="form-group"><label>Status</label><select id="f-atStatus"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Waiting / Blocked</option><option>Complete</option></select></div>
+    </div>
+    <div class="form-group"><label>Podcast (optional)</label><select id="f-atPodcast" onchange="onAtPodcastChange()"></select></div>
+    <div id="f-atScopeRow" style="display:none">
+      <div class="form-group">
+        <label>Add to</label>
+        <select id="f-atScope" onchange="onAtScopeChange()">
+          <option value="series">Series only (no specific episode)</option>
+          <option value="all">All episodes</option>
+          <option value="one">A specific episode</option>
+        </select>
+        <div id="f-atScopeHint" style="font-size:12px;color:var(--accent);margin-top:6px;min-height:16px"></div>
+      </div>
+    </div>
+    <div class="form-group hidden" id="f-atEpisodeRow"><label>Episode</label><select id="f-atEpisode"></select></div>
+    <div class="form-group"><label>Notes</label><textarea id="f-atNotes" rows="2" placeholder="Any extra detail..."></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="saveAtBtn" onclick="saveAllTask()">Add Task</button></div>
   </div>
 
   <div class="modal hidden" id="modalImportTodos" style="width:600px;max-width:96vw">
@@ -732,6 +769,7 @@ const TEMPLATES={
 
 let db={people:[],podcasts:[],episodes:[],tasks:[],todos:[],taskTemplates:[],companies:[]};
 let currentView='dashboard',currentPodcastId=null,currentEpisodeId=null,editingPersonId=null,editingTaskId=null,currentUser='all';
+let filterStatuses=new Set(),filterPodcasts=new Set(),filterRoles=new Set(),filterPersonIds=new Set();
 let ganttDayWidth=28,ganttExpanded={};
 let loggedInUser=null,isAdmin=false;
 let lastAction=null,undoTimer=null;
@@ -823,15 +861,18 @@ async function writeTemplatesForType(type,tasks){
 }
 
 function navigate(view,id){
+  // Redirect removed views to All Tasks
+  if(view==='mytasks'){view='tasks';}
+  if(view==='todos'){filterPodcasts=new Set(['__none__']);view='tasks';}
   // Restrict non-admins from admin-only views
-  if(!isAdmin&&['podcasts','tasks','gantt','settings','companies','contacts'].includes(view)){view='mytasks';}
+  if(!isAdmin&&['podcasts','gantt','settings','companies','contacts'].includes(view)){view='tasks';}
   currentView=view;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const nk=(view==='episodes'||view==='episode-tasks')?'podcasts':view==='company'?'companies':view==='contact'?'contacts':view;
   document.getElementById('nav-'+nk)?.classList.add('active');
   document.querySelectorAll('[id^="view-"]').forEach(v=>v.classList.add('hidden'));
   document.getElementById('view-'+view)?.classList.remove('hidden');
-  const titles={dashboard:'Dashboard',companies:'Companies',company:'Company',contacts:'Contacts',contact:'Contact',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',mytasks:'My Tasks',gantt:'Gantt',todos:'To-Do',settings:'Settings'};
+  const titles={dashboard:'Dashboard',companies:'Companies',company:'Company',contacts:'Contacts',contact:'Contact',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',gantt:'Gantt',settings:'Settings'};
   document.getElementById('pageTitle').textContent=titles[view]||view;
   document.getElementById('topbarActions').innerHTML='';
   if(view==='companies'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewCompanyModal()">+ Add Company</button>';renderCompanies();}
@@ -842,10 +883,8 @@ function navigate(view,id){
   else if(view==='dashboard'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" id="sendRemindersBtn" onclick="sendUrgentReminders()">⏰ Send Reminders</button>';renderDashboard();}
   else if(view==='episodes'){if(id)currentPodcastId=id;renderEpisodes();}
   else if(view==='episode-tasks'){if(id)currentEpisodeId=id;renderEpisodeTasks();document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" id="notifyEpisodeBtn" onclick="notifyEpisodeTeam()" style="margin-right:8px">📧 Notify Team</button><button class="btn" onclick="openAdhocTaskModal()">+ Ad Hoc Task</button>';}
-  else if(view==='tasks'){populateTaskFilters();renderAllTasks();}
-  else if(view==='mytasks')renderMyTasks();
+  else if(view==='tasks'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" onclick="openImportTodosModal()">↑ Import</button>';populateTaskFilters();renderAllTasks();}
   else if(view==='gantt'){populateGanttFilter();renderGantt();}
-  else if(view==='todos'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" onclick="openImportTodosModal()" style="margin-right:8px">↑ Import</button><button class="btn" onclick="openNewTodoModal()">+ New To-Do</button>';populateTodoFilters();renderTodos();}
   else if(view==='settings'){document.getElementById('topbarActions').innerHTML='';renderSettings();}
 }
 
@@ -917,7 +956,7 @@ function renderDashboard(){
     else if(urgentCount>0){healthColor='#ee9940';healthLabel=urgentCount+' due soon';}
     else{healthColor='var(--complete-text)';healthLabel='On track';}
     const barW=Math.min(100,total*8); // rough capacity bar
-    return`<tr class="clickable" onclick="currentUser='${p.id}';document.getElementById('currentUser').value='${p.id}';navigate('mytasks')">
+    return`<tr class="clickable" onclick="filterPersonIds=new Set(['${p.id}']);navigate('tasks')">
       <td><span class="assignee-chip"><span class="avatar">${ini(p.name)}</span>${p.name}</span></td>
       <td><span style="font-size:11px;color:var(--text-muted)">${p.role}</span></td>
       <td>
@@ -1121,9 +1160,71 @@ function progressRing(pct,size,stroke,color){
   </svg>`;
 }
 
+function clearPersonFilter(){
+  filterPersonIds=new Set();
+  document.querySelectorAll('#msDropPerson input[type=checkbox]').forEach(c=>c.checked=false);
+  updateMsLabel('person');
+  renderAllTasks();
+}
+
+function toggleMsFilter(dropId){
+  const drop=document.getElementById(dropId);
+  const wasOpen=drop.classList.contains('open');
+  document.querySelectorAll('.ms-drop').forEach(d=>d.classList.remove('open'));
+  if(!wasOpen)drop.classList.add('open');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.ms-wrap'))document.querySelectorAll('.ms-drop').forEach(d=>d.classList.remove('open'));});
+
+function getMsChecked(dropId){
+  return new Set([...document.querySelectorAll('#'+dropId+' input[type=checkbox]:checked')].map(c=>c.value));
+}
+
+function onMsChange(type){
+  if(type==='status')filterStatuses=getMsChecked('msDropStatus');
+  if(type==='podcast')filterPodcasts=getMsChecked('msDropPodcast');
+  if(type==='role')filterRoles=getMsChecked('msDropRole');
+  if(type==='person')filterPersonIds=getMsChecked('msDropPerson');
+  updateMsLabel(type);
+  document.getElementById('msBtn'+type.charAt(0).toUpperCase()+type.slice(1)).classList.toggle('has-filter',getMsChecked('msDrop'+type.charAt(0).toUpperCase()+type.slice(1)).size>0);
+  renderAllTasks();
+}
+
+function updateMsLabel(type){
+  const defaults={status:'Open tasks',podcast:'All Podcasts',role:'All Roles',person:'All People'};
+  const map={status:filterStatuses,podcast:filterPodcasts,role:filterRoles,person:filterPersonIds};
+  const el=document.getElementById('msLabel'+type.charAt(0).toUpperCase()+type.slice(1));
+  if(!el)return;
+  const s=map[type];
+  if(s.size===0){el.textContent=defaults[type];}
+  else if(s.size===1){
+    if(type==='person'){const p=pById([...s][0]);el.textContent=p?p.name:'1 person';}
+    else if(type==='podcast'){const v=[...s][0];if(v==='__none__'){el.textContent='Standalone';}else{const p=podById(v);el.textContent=p?p.name:'1 selected';}}
+    else{el.textContent=[...s][0];}
+  }else{el.textContent=s.size+' selected';}
+  const btn=document.getElementById('msBtn'+type.charAt(0).toUpperCase()+type.slice(1));
+  if(btn)btn.classList.toggle('has-filter',s.size>0);
+}
+
 function populateTaskFilters(){
-  document.getElementById('filterPodcast').innerHTML='<option value="">All Podcasts</option>'+db.podcasts.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  populateRoleFilter();
+  // Podcast dropdown
+  document.getElementById('msDropPodcast').innerHTML=
+    `<label><input type="checkbox" value="__none__"${filterPodcasts.has('__none__')?' checked':''} onchange="onMsChange('podcast')"> — Standalone —</label>`+
+    (db.podcasts.length?`<hr style="margin:4px 0;border:none;border-top:1px solid var(--border)">`:'')+
+    db.podcasts.map(p=>`<label><input type="checkbox" value="${p.id}"${filterPodcasts.has(p.id)?' checked':''} onchange="onMsChange('podcast')"> ${p.name||p.company||'Untitled'}</label>`).join('');
+  // Role dropdown
+  document.getElementById('msDropRole').innerHTML=getTaskRoles().map(r=>
+    `<label><input type="checkbox" value="${r}"${filterRoles.has(r)?' checked':''} onchange="onMsChange('role')"> ${r}</label>`
+  ).join('');
+  // Person dropdown
+  document.getElementById('msDropPerson').innerHTML=
+    `<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearPersonFilter()" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:inherit">Show everyone</button></div>`+
+    db.people.filter(p=>p.active!==false).map(p=>
+      `<label><input type="checkbox" value="${p.id}"${filterPersonIds.has(p.id)?' checked':''} onchange="onMsChange('person')"> ${p.name}</label>`
+    ).join('');
+  updateMsLabel('podcast');
+  updateMsLabel('role');
+  updateMsLabel('person');
+  updateMsLabel('status');
 }
 
 let taskViewMode = 'table';
@@ -1148,19 +1249,24 @@ function setTodoView(mode){
 }
 
 function getFilteredTasks(){
-  const sf=document.getElementById('filterStatus').value,pf=document.getElementById('filterPodcast').value,rf=document.getElementById('filterRole').value;
   const q=(document.getElementById('searchTasks')?.value||'').toLowerCase().trim();
   let tasks=[...db.tasks];
-  if(!sf) tasks=tasks.filter(t=>t.status!=='Complete');
-  if(sf) tasks=tasks.filter(t=>t.status===sf);
-  if(rf) tasks=tasks.filter(t=>t.role===rf);
-  if(pf){const eids=db.episodes.filter(e=>e.podcast_id===pf).map(e=>e.id);tasks=tasks.filter(t=>eids.includes(t.episode_id));}
+  if(filterPersonIds.size>0) tasks=tasks.filter(t=>filterPersonIds.has(t.assigned_to));
+  if(filterStatuses.size===0) tasks=tasks.filter(t=>t.status!=='Complete');
+  else tasks=tasks.filter(t=>filterStatuses.has(t.status));
+  if(filterRoles.size>0) tasks=tasks.filter(t=>filterRoles.has(t.role));
+  if(filterPodcasts.size>0){
+    const podIds=new Set([...filterPodcasts].filter(id=>id!=='__none__'));
+    if(podIds.size>0){const eids=db.episodes.filter(e=>podIds.has(e.podcast_id)).map(e=>e.id);tasks=tasks.filter(t=>eids.includes(t.episode_id));}
+    else tasks=[];
+  }
   if(q){tasks=tasks.filter(t=>{const ep=epById(t.episode_id),pod=ep?podById(ep.podcast_id):null,person=t.assigned_to?pById(t.assigned_to):null;return[t.name,t.notes,ep?.title,ep?.default_title,pod?.name,pod?.company,person?.name].some(v=>(v||'').toLowerCase().includes(q));});}
-  if(!rf){
+  if(filterRoles.size===0){
     let todos=[...db.todos];
-    if(!sf) todos=todos.filter(t=>t.status!=='Complete');
-    if(sf) todos=todos.filter(t=>t.status===sf);
-    if(pf) todos=todos.filter(t=>t.podcast_id===pf);
+    if(filterPersonIds.size>0) todos=todos.filter(t=>filterPersonIds.has(t.assigned_to));
+    if(filterStatuses.size===0) todos=todos.filter(t=>t.status!=='Complete');
+    else todos=todos.filter(t=>filterStatuses.has(t.status));
+    if(filterPodcasts.size>0) todos=todos.filter(t=>!t.podcast_id?filterPodcasts.has('__none__'):filterPodcasts.has(t.podcast_id));
     if(q){todos=todos.filter(t=>{const pod=t.podcast_id?podById(t.podcast_id):null,person=t.assigned_to?pById(t.assigned_to):null;return[t.name,t.notes,pod?.name,person?.name].some(v=>(v||'').toLowerCase().includes(q));});}
     todos.forEach(t=>t._isTodo=true);
     tasks=[...tasks,...todos];
@@ -1521,8 +1627,7 @@ function addCustomRole(){
   notify(`Role "${name}" added`);
   renderSettingsRoles();
   // Refresh any open dropdowns that list roles
-  const fr=document.getElementById('filterRole');
-  if(fr)populateRoleFilter();
+  if(document.getElementById('msDropRole'))populateRoleFilter();
 }
 
 function deleteCustomRole(encoded){
@@ -1536,9 +1641,8 @@ function deleteCustomRole(encoded){
 }
 
 function populateRoleFilter(){
-  const el=document.getElementById('filterRole');if(!el)return;
-  const current=el.value;
-  el.innerHTML='<option value="">All Roles</option>'+getTaskRoles().map(r=>`<option${r===current?' selected':''}>${r}</option>`).join('');
+  const el=document.getElementById('msDropRole');if(!el)return;
+  el.innerHTML=getTaskRoles().map(r=>`<label><input type="checkbox" value="${r}"${filterRoles.has(r)?' checked':''} onchange="onMsChange('role')"> ${r}</label>`).join('');
 }
 
 let _settingsTmplType='Interview';
@@ -2407,6 +2511,85 @@ async function saveAdhocTask(){
 }
 
 // ============================================================
+// ADD TASK FROM ALL TASKS VIEW
+// ============================================================
+function openAllTaskAdd(){
+  document.getElementById('f-atName').value='';
+  document.getElementById('f-atDue').value='';
+  document.getElementById('f-atNotes').value='';
+  document.getElementById('f-atStatus').value='To Do';
+  document.getElementById('f-atScopeHint').textContent='';
+  document.getElementById('f-atScopeRow').style.display='none';
+  document.getElementById('f-atEpisodeRow').classList.add('hidden');
+  document.getElementById('f-atScope').value='series';
+  document.getElementById('f-atAssigned').innerHTML='<option value="">— Unassigned —</option>'+db.people.map(p=>`<option value="${p.id}">${p.name} (${p.role})</option>`).join('');
+  document.getElementById('f-atRole').innerHTML='<option value="">— No role —</option>'+getTaskRoles().map(r=>`<option>${r}</option>`).join('');
+  document.getElementById('f-atPodcast').innerHTML='<option value="">— Standalone (no podcast) —</option>'+db.podcasts.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  if(filterPersonIds.size===1) document.getElementById('f-atAssigned').value=[...filterPersonIds][0];
+  openModal('modalAllTaskAdd');
+}
+
+function onAtPodcastChange(){
+  const pod=document.getElementById('f-atPodcast').value;
+  document.getElementById('f-atScopeRow').style.display=pod?'block':'none';
+  document.getElementById('f-atEpisodeRow').classList.add('hidden');
+  if(pod){document.getElementById('f-atScope').value='series';document.getElementById('f-atScopeHint').textContent='';}
+}
+
+function onAtScopeChange(){
+  const scope=document.getElementById('f-atScope').value;
+  const podId=document.getElementById('f-atPodcast').value;
+  if(scope==='one'){
+    const eps=db.episodes.filter(e=>e.podcast_id===podId).sort((a,b)=>a.number-b.number);
+    document.getElementById('f-atEpisode').innerHTML=eps.map(e=>`<option value="${e.id}">${e.default_title||'E'+e.number}${e.title?' · '+e.title:''}</option>`).join('');
+    document.getElementById('f-atEpisodeRow').classList.remove('hidden');
+  } else {
+    document.getElementById('f-atEpisodeRow').classList.add('hidden');
+  }
+  const eps=db.episodes.filter(e=>e.podcast_id===podId);
+  document.getElementById('f-atScopeHint').textContent=scope==='all'?`Will add to all ${eps.length} episode${eps.length!==1?'s':''}.`:'';
+}
+
+async function saveAllTask(){
+  const name=document.getElementById('f-atName').value.trim();
+  if(!name){alert('Task name is required');return;}
+  const btn=document.getElementById('saveAtBtn');btn.disabled=true;setSync('syncing');
+  try{
+    const assignedTo=document.getElementById('f-atAssigned').value||null;
+    const role=document.getElementById('f-atRole').value||null;
+    const dueDate=document.getElementById('f-atDue').value||null;
+    const status=document.getElementById('f-atStatus').value;
+    const notes=document.getElementById('f-atNotes').value.trim();
+    const podId=document.getElementById('f-atPodcast').value||null;
+    const scope=document.getElementById('f-atScope').value;
+    const episodeId=document.getElementById('f-atEpisode').value||null;
+
+    if(!podId||scope==='series'){
+      const data={id:uid(),name,assigned_to:assignedTo,due_date:dueDate,podcast_id:podId,episode_id:null,status,notes};
+      await api.post('todos',data);db.todos.push(data);
+      notify('Task added!');
+    } else if(scope==='one'){
+      const existing=epTasks(episodeId);
+      const maxOrder=existing.length?Math.max(...existing.map(t=>t.task_order)):100;
+      const data={id:uid(),episode_id:episodeId,name,role,assigned_to:assignedTo,status,due_date:dueDate,start_date:null,task_order:maxOrder+10,notes};
+      await api.post('tasks',data);db.tasks.push(data);
+      notify('Task added to episode!');
+    } else {
+      const episodes=db.episodes.filter(e=>e.podcast_id===podId);
+      for(const ep of episodes){
+        const existing=epTasks(ep.id);
+        const maxOrder=existing.length?Math.max(...existing.map(t=>t.task_order)):100;
+        const data={id:uid(),episode_id:ep.id,name,role,assigned_to:assignedTo,status,due_date:dueDate,start_date:null,task_order:maxOrder+10,notes};
+        await api.post('tasks',data);db.tasks.push(data);
+      }
+      notify(`Task added to ${episodes.length} episode${episodes.length!==1?'s':''}!`);
+    }
+    setSync('live');closeModal();renderAllTasks();
+  }catch(e){setSync('error');notify('Error: '+e.message,true);}
+  finally{btn.disabled=false;}
+}
+
+// ============================================================
 // IMPORT TODOS
 // ============================================================
 let importRows = [];
@@ -2958,15 +3141,15 @@ function setupForUser(){
   document.getElementById('sidebarUser').style.display='flex';
   document.getElementById('sidebarAvatar').textContent=ini(loggedInUser.name);
   document.getElementById('sidebarUserName').textContent=loggedInUser.name;
-  const adminOnlyNav=['nav-companies','nav-contacts','nav-podcasts','nav-tasks','nav-gantt','nav-settings'];
+  filterPersonIds=new Set([loggedInUser.id]);
+  document.querySelector('.user-switcher').style.display='none';
+  const adminOnlyNav=['nav-companies','nav-contacts','nav-podcasts','nav-gantt','nav-settings'];
   if(!isAdmin){
     adminOnlyNav.forEach(id=>document.getElementById(id)?.classList.add('hidden'));
-    currentUser=loggedInUser.id;
-    document.getElementById('currentUser').value=loggedInUser.id;
-    document.querySelector('.user-switcher').style.display='none';
+    document.getElementById('msWrapPerson').style.display='none';
   } else {
     adminOnlyNav.forEach(id=>document.getElementById(id)?.classList.remove('hidden'));
-    document.querySelector('.user-switcher').style.display='';
+    document.getElementById('msWrapPerson').style.display='';
   }
 }
 
