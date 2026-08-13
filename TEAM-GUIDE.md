@@ -8,19 +8,22 @@ Your quick reference for using the app day to day.
 
 Open the app in your browser. Click your name on the login screen to get started — no password needed.
 
-**Admins** (Steve and Emma) can see everything. **Everyone else** sees only their own tasks and to-dos.
-
-To switch between people (Admins only), use the **Viewing as** dropdown in the bottom-left sidebar.
+**Admins** (Steve and Emma) can see everything and filter by any person. **Everyone else** sees only their own tasks.
 
 ---
 
 ## Finding your tasks
 
-**My Tasks** (sidebar) — your open episode tasks and to-dos in one place. Click any task row to open the episode it belongs to.
+**All Tasks** (sidebar) — opens showing your own tasks by default. Use the filters at the top to adjust what you see:
 
-**All Tasks** — every open task across all podcasts. Filter by status, podcast, or role. Switch between Table and Kanban views using the toggle top-right.
+- **Person** — admins can switch to another team member or click **Show everyone** to see the full team. Non-admins are always locked to their own view.
+- **Status** — defaults to open tasks (everything except Complete). Tick multiple statuses at once — e.g. "In Review" and "Waiting / Blocked" together.
+- **Podcast** — filter by one or more podcasts. Choose **— Standalone —** to see tasks not tied to any podcast.
+- **Role** — filter by one or more roles (Producer, Editor, etc.).
 
-Use the **search bar** at the top of My Tasks, All Tasks, or To-Dos to filter as you type — searches across task name, podcast, company, notes, and assignee.
+Switch between Table and Kanban views using the toggle top-right.
+
+Use the **search bar** at the top of All Tasks to filter as you type — searches across task name, podcast, company, notes, and assignee.
 
 ---
 
@@ -98,7 +101,7 @@ Podcasts that were created before the CRM was set up (with a company name typed 
 
 ## Bulk updates
 
-On **All Tasks** and **My Tasks**, tick the checkboxes next to tasks to select them. The bulk bar at the top lets you:
+On **All Tasks**, tick the checkboxes next to tasks to select them. The bulk bar at the top lets you:
 - Change status for all selected tasks at once
 - Reassign to a different person (Admins only)
 - Shift all due dates forward or back by a number of days
@@ -107,11 +110,16 @@ Hit **↩ Oh Crap** straight after if you need to undo it.
 
 ---
 
-## To-Dos
+## Adding a task
 
-Freestanding tasks that aren't tied to an episode (chasing a client, admin tasks, etc.). Add via **+ New To-Do**. You can link a to-do to a podcast and episode for context.
+Click **+ Add Task** in the top-right of All Tasks to create a new task. You can add:
 
-Import a batch of to-dos via **↑ Import** using the CSV template.
+- A **standalone task** — not linked to any podcast (admin tasks, one-offs, etc.)
+- A **series task** — linked to a podcast but not a specific episode
+- A task on a **specific episode**
+- A task **repeated across all episodes** of a podcast
+
+Import a batch of tasks via **↑ Import** in the All Tasks topbar.
 
 ---
 

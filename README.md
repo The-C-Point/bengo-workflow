@@ -14,9 +14,7 @@ Internal workflow tool for **Bengo Media** (Dream Together Limited). Manages pod
 - **Tasks** — auto-generated from templates per podcast type; assignable, status-trackable, with due dates counted back from launch
 - **Task templates** — Interview, Solo, Panel, Scripted, Full Production (see below)
 - **Episode rescheduling** — shift launch date and all task due dates cascade automatically
-- **All Tasks view** — table and Kanban views, filterable by status / podcast / role; bulk status, assignee, and date-shift updates
-- **My Tasks** — per-person view of open episode tasks and to-dos
-- **To-Do** — freestanding tasks (not tied to an episode); table and Kanban views; CSV import
+- **All Tasks view** — central task hub; defaults to logged-in user's tasks; multi-select filters for person, status, podcast, and role; + Add Task (standalone, series, specific episode, or all episodes); CSV import; table and Kanban views; bulk status, assignee, and date-shift updates
 - **Gantt chart** — canvas-based, zoomable, grouped by podcast; shows episode bars and task dots
 - **Companies** — full CRM view: company cards with registration number, VAT, addresses, up to four contacts (main, accounts, second, third), notes; company detail view with linked podcasts; add podcast pre-fills company name
 - **Settings** (admin only) — four tabs: **Users** (team member management), **Roles** (add custom roles e.g. Marketing Assistant), **Task Templates** (view, add, edit, delete, export and import per type via CSV), **Podcast Types** (descriptions, add custom types)
@@ -138,6 +136,13 @@ See CLAUDE.md for full schema.
 - **Roles tab**: add custom roles (e.g. Marketing Assistant, Admin Assistant) that appear in the team member form, task template role picker, ad hoc task role picker, and All Tasks filter; built-in roles are locked; custom roles are deletable if no team members use them
 - Task templates now loaded from Supabase `task_templates` table at startup (falls back to hardcoded if empty)
 - Podcast creation modal type dropdown now dynamic — picks up custom types automatically
+
+### 13 August 2026
+- **Consolidated nav** — My Tasks and To-Do removed as separate nav items; All Tasks is now the single task hub for everyone
+- **All Tasks defaults to self** — opens showing logged-in user's tasks; non-admins are locked to their own view (person filter hidden); admins can switch to other people or use "Show everyone" to clear the filter
+- **Multi-select filters** — person, status, podcast, and role filters are now checkbox dropdowns; select multiple values at once (e.g. "In Review" + "Waiting / Blocked"); standalone tasks filterable via "— Standalone —" in the podcast filter
+- **+ Add Task from All Tasks** — create any task type from the All Tasks view: standalone (no podcast), series-level (linked to a podcast, no episode), a specific episode, or repeated across all episodes of a podcast
+- **CSV Import moved** — import button now lives in the All Tasks topbar (was in To-Do)
 
 ### 29 April 2026
 - Added **Kanban drag and drop** — drag cards between columns on both Tasks and To-Dos kanban boards; saves to Supabase on drop; undo supported; uses `addEventListener`-based approach for reliability

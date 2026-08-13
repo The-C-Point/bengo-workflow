@@ -90,6 +90,7 @@
   label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;font-weight:500;}
   input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:6px;font-size:13px;font-family:'Varela Round',sans-serif;outline:none;transition:border-color .15s;}
   input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  input[type=date]{color-scheme:light;}
   .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;}
   .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
@@ -312,9 +313,10 @@
         <div class="task-filters">
           <input class="search-input" type="text" id="searchTasks" placeholder="Search tasks…" oninput="renderAllTasks()">
           <div class="ms-wrap" id="msWrapPerson"><button class="ms-btn" id="msBtnPerson" onclick="toggleMsFilter('msDropPerson')"><span id="msLabelPerson">My Tasks</span> ▾</button><div class="ms-drop" id="msDropPerson"></div></div>
-          <div class="ms-wrap"><button class="ms-btn" id="msBtnStatus" onclick="toggleMsFilter('msDropStatus')"><span id="msLabelStatus">Open tasks</span> ▾</button><div class="ms-drop" id="msDropStatus"><label><input type="checkbox" value="To Do" onchange="onMsChange('status')"> To Do</label><label><input type="checkbox" value="In Progress" onchange="onMsChange('status')"> In Progress</label><label><input type="checkbox" value="In Review" onchange="onMsChange('status')"> In Review</label><label><input type="checkbox" value="Waiting / Blocked" onchange="onMsChange('status')"> Waiting / Blocked</label><label><input type="checkbox" value="Complete" onchange="onMsChange('status')"> Complete</label></div></div>
+          <div class="ms-wrap"><button class="ms-btn" id="msBtnStatus" onclick="toggleMsFilter('msDropStatus')"><span id="msLabelStatus">Open tasks</span> ▾</button><div class="ms-drop" id="msDropStatus"><div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('status')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Clear</button></div><label><input type="checkbox" value="To Do" onchange="onMsChange('status')"> To Do</label><label><input type="checkbox" value="In Progress" onchange="onMsChange('status')"> In Progress</label><label><input type="checkbox" value="In Review" onchange="onMsChange('status')"> In Review</label><label><input type="checkbox" value="Waiting / Blocked" onchange="onMsChange('status')"> Waiting / Blocked</label><label><input type="checkbox" value="Complete" onchange="onMsChange('status')"> Complete</label></div></div>
           <div class="ms-wrap"><button class="ms-btn" id="msBtnPodcast" onclick="toggleMsFilter('msDropPodcast')"><span id="msLabelPodcast">All Podcasts</span> ▾</button><div class="ms-drop" id="msDropPodcast"></div></div>
           <div class="ms-wrap"><button class="ms-btn" id="msBtnRole" onclick="toggleMsFilter('msDropRole')"><span id="msLabelRole">All Roles</span> ▾</button><div class="ms-drop" id="msDropRole"></div></div>
+          <button id="clearAllFiltersBtn" onclick="clearAllFilters()" style="display:none;background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:4px 2px;font-family:'Varela Round',sans-serif;white-space:nowrap">✕ Clear filters</button>
           <div class="view-toggle">
             <button class="view-toggle-btn active" id="toggleTable" onclick="setTaskView('table')">≡ Table</button>
             <button class="view-toggle-btn" id="toggleKanban" onclick="setTaskView('kanban')">⊞ Kanban</button>
@@ -1160,11 +1162,32 @@ function progressRing(pct,size,stroke,color){
   </svg>`;
 }
 
-function clearPersonFilter(){
-  filterPersonIds=new Set();
-  document.querySelectorAll('#msDropPerson input[type=checkbox]').forEach(c=>c.checked=false);
-  updateMsLabel('person');
+function clearFilter(type){
+  if(type==='person') filterPersonIds=new Set();
+  else if(type==='status') filterStatuses=new Set();
+  else if(type==='podcast') filterPodcasts=new Set();
+  else if(type==='role') filterRoles=new Set();
+  const dropId='msDrop'+type.charAt(0).toUpperCase()+type.slice(1);
+  document.querySelectorAll('#'+dropId+' input[type=checkbox]').forEach(c=>c.checked=false);
+  updateMsLabel(type);
+  updateClearAllBtn();
   renderAllTasks();
+}
+
+function clearAllFilters(){
+  filterStatuses=new Set();filterPodcasts=new Set();filterRoles=new Set();
+  filterPersonIds=isAdmin?new Set():new Set([loggedInUser.id]);
+  document.querySelectorAll('.ms-drop input[type=checkbox]').forEach(c=>c.checked=false);
+  if(!isAdmin&&loggedInUser){document.querySelectorAll('#msDropPerson input[type=checkbox]').forEach(c=>{if(c.value===String(loggedInUser.id))c.checked=true;});}
+  ['person','status','podcast','role'].forEach(t=>updateMsLabel(t));
+  updateClearAllBtn();
+  renderAllTasks();
+}
+
+function updateClearAllBtn(){
+  const anyActive=(isAdmin&&filterPersonIds.size>0)||filterStatuses.size>0||filterPodcasts.size>0||filterRoles.size>0;
+  const btn=document.getElementById('clearAllFiltersBtn');
+  if(btn)btn.style.display=anyActive?'':'none';
 }
 
 function toggleMsFilter(dropId){
@@ -1186,6 +1209,7 @@ function onMsChange(type){
   if(type==='person')filterPersonIds=getMsChecked('msDropPerson');
   updateMsLabel(type);
   document.getElementById('msBtn'+type.charAt(0).toUpperCase()+type.slice(1)).classList.toggle('has-filter',getMsChecked('msDrop'+type.charAt(0).toUpperCase()+type.slice(1)).size>0);
+  updateClearAllBtn();
   renderAllTasks();
 }
 
@@ -1206,18 +1230,20 @@ function updateMsLabel(type){
 }
 
 function populateTaskFilters(){
+  const clearLink=(type)=>`<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('${type}')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Clear</button></div>`;
   // Podcast dropdown
   document.getElementById('msDropPodcast').innerHTML=
+    clearLink('podcast')+
     `<label><input type="checkbox" value="__none__"${filterPodcasts.has('__none__')?' checked':''} onchange="onMsChange('podcast')"> — Standalone —</label>`+
     (db.podcasts.length?`<hr style="margin:4px 0;border:none;border-top:1px solid var(--border)">`:'')+
     db.podcasts.map(p=>`<label><input type="checkbox" value="${p.id}"${filterPodcasts.has(p.id)?' checked':''} onchange="onMsChange('podcast')"> ${p.name||p.company||'Untitled'}</label>`).join('');
   // Role dropdown
-  document.getElementById('msDropRole').innerHTML=getTaskRoles().map(r=>
-    `<label><input type="checkbox" value="${r}"${filterRoles.has(r)?' checked':''} onchange="onMsChange('role')"> ${r}</label>`
-  ).join('');
+  document.getElementById('msDropRole').innerHTML=
+    clearLink('role')+
+    getTaskRoles().map(r=>`<label><input type="checkbox" value="${r}"${filterRoles.has(r)?' checked':''} onchange="onMsChange('role')"> ${r}</label>`).join('');
   // Person dropdown
   document.getElementById('msDropPerson').innerHTML=
-    `<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearPersonFilter()" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:inherit">Show everyone</button></div>`+
+    `<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('person')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Show everyone</button></div>`+
     db.people.filter(p=>p.active!==false).map(p=>
       `<label><input type="checkbox" value="${p.id}"${filterPersonIds.has(p.id)?' checked':''} onchange="onMsChange('person')"> ${p.name}</label>`
     ).join('');
@@ -1225,6 +1251,7 @@ function populateTaskFilters(){
   updateMsLabel('role');
   updateMsLabel('person');
   updateMsLabel('status');
+  updateClearAllBtn();
 }
 
 let taskViewMode = 'table';
