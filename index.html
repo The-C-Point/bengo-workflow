@@ -268,7 +268,10 @@
       <div class="user-label">Viewing as</div>
       <select class="user-select" id="currentUser" onchange="onUserChange()"><option value="all">— All users —</option></select>
     </div>
-    <div class="sync-indicator" id="syncIndicator">● Live</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="sync-indicator" id="syncIndicator">● Live</div>
+      <button onclick="syncAll()" title="Refresh all data from the database" style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:2px 4px;border-radius:4px;font-family:'Varela Round',sans-serif" id="syncBtn">↻</button>
+    </div>
     <div class="sidebar-user" id="sidebarUser" style="display:none">
       <span class="avatar" id="sidebarAvatar">?</span>
       <span class="sidebar-user-name" id="sidebarUserName"></span>
@@ -815,6 +818,19 @@ function roleP(podcastId,role){const p=podById(podcastId);if(!p)return null;if(r
 function epTasks(epId){return db.tasks.filter(t=>t.episode_id===epId).sort((a,b)=>a.task_order-b.task_order);}
 function epProg(epId){const t=epTasks(epId);if(!t.length)return 0;return Math.round(t.filter(t=>t.status==='Complete').length/t.length*100);}
 function epStatus(epId){const t=epTasks(epId);if(!t.length)return'To Do';if(t.every(t=>t.status==='Complete'))return'Complete';if(t.some(t=>t.status==='In Progress'||t.status==='In Review'||t.status==='Waiting / Blocked'))return'In Progress';return'To Do';}
+
+async function syncAll(){
+  const btn=document.getElementById('syncBtn');
+  btn.style.opacity='0.4';btn.style.pointerEvents='none';
+  setSync('syncing');
+  try{
+    await loadAll();
+    setSync('live');
+    navigate(currentView,currentView==='episodes'?currentPodcastId:currentView==='episode-tasks'?currentEpisodeId:currentView==='company'||currentView==='contact'?currentView:undefined);
+    notify('Synced ✓');
+  }catch(e){setSync('error');notify('Sync failed',true);}
+  finally{btn.style.opacity='';btn.style.pointerEvents='';}
+}
 
 function setSync(s){const el=document.getElementById('syncIndicator');if(s==='syncing'){el.textContent='↻ Saving…';el.className='sync-indicator syncing';}else if(s==='error'){el.textContent='✕ Error';el.className='sync-indicator error';}else{el.textContent='● Live';el.className='sync-indicator';}}
 function notify(msg,err){const el=document.createElement('div');el.className='notify'+(err?' err':'');el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);}
