@@ -418,11 +418,12 @@
 <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOnOverlay(event)">
   <div class="modal hidden" id="modalPodcast">
     <div class="modal-title" id="podcastModalTitle">New Podcast</div>
-    <div class="form-row"><div class="form-group"><label>Podcast Name</label><input type="text" id="f-podName" placeholder="e.g. The Bengo Show"></div><div class="form-group"><label>Podcast Type</label><select id="f-podType"><option>Interview</option><option>Solo</option><option>Panel</option><option>Scripted</option><option>Full Production</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label>Podcast Name</label><input type="text" id="f-podName" placeholder="e.g. The Bengo Show"></div><div class="form-group"><label>Podcast Type</label><select id="f-podType" onchange="updatePodcastCustomRoles()"><option>Interview</option><option>Solo</option><option>Panel</option><option>Scripted</option><option>Full Production</option></select></div></div>
     <div class="form-row"><div class="form-group"><label>Client / Company</label><input type="text" id="f-podCompany"></div><div class="form-group"><label>Contact Name</label><input type="text" id="f-podContact"></div></div>
     <div class="form-row"><div class="form-group"><label>Executive Producer</label><select id="f-podEP"></select></div><div class="form-group"><label>Producer</label><select id="f-podProducer"></select></div></div>
     <div class="form-row"><div class="form-group"><label>Assistant Producer (optional)</label><select id="f-podAP"></select></div><div class="form-group"><label>Editor</label><select id="f-podEditor"></select></div></div>
     <div class="form-row"><div class="form-group"><label>Accounts</label><select id="f-podAccounts"></select></div></div>
+    <div id="podCustomRoleFields"></div>
     <div class="form-row"><div class="form-group" style="grid-column:1/-1"><label>Launch Frequency</label><select id="f-podFreq" style="max-width:220px"><option>Weekly</option><option>BiWeekly</option><option>Monthly</option></select></div></div>
     <div class="form-row"><div class="form-group"><label>Season</label><input type="number" id="f-podSeason" value="1" min="1"></div><div class="form-group"><label>Number of Episodes</label><input type="number" id="f-podEpCount" value="6" min="1"></div></div>
     <div class="form-row"><div class="form-group"><label>Episode 1 Launch Date</label><input type="date" id="f-podLaunchDate"></div><div class="form-group" style="display:flex;align-items:flex-end"><p style="font-size:11px;color:var(--text-muted);line-height:1.5">All episodes and tasks auto-generated from this date.</p></div></div>
@@ -874,6 +875,14 @@ function savePodcastTypeData(name,data){
   const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
   stored[name]={...stored[name],...data};
   localStorage.setItem('bengo_podcast_types',JSON.stringify(stored));
+}
+
+const STANDARD_ROLES=new Set(['Executive Producer','Producer','Assistant Producer','Editor','Accounts']);
+
+function buildRoleMap(pod){
+  const base={'Executive Producer':pod.ep||null,'Producer':pod.producer||null,'Assistant Producer':pod.ap||null,'Editor':pod.editor||null,'Accounts':pod.accounts||null};
+  const custom=pod.custom_role_assignments||{};
+  return{...base,...custom};
 }
 
 function getTemplatesForType(type){
@@ -2153,6 +2162,37 @@ function populatePodcastTypeDropdown(selectedType){
   document.getElementById('f-podType').innerHTML=getPodcastTypes().map(t=>`<option${t.name===selectedType?' selected':''}>${t.name}</option>`).join('');
 }
 
+function getCustomRoleAssignments(){
+  const assignments={};
+  document.querySelectorAll('[id^="f-podCustom-"]').forEach(sel=>{
+    const role=decodeURIComponent(sel.id.replace('f-podCustom-',''));
+    if(sel.value)assignments[role]=sel.value;
+  });
+  return Object.keys(assignments).length?assignments:null;
+}
+
+function updatePodcastCustomRoles(existingAssignments){
+  const type=document.getElementById('f-podType').value;
+  const tmpls=getTemplatesForType(type);
+  const customRoles=[...new Set(tmpls.map(t=>t.role).filter(r=>!STANDARD_ROLES.has(r)))];
+  const container=document.getElementById('podCustomRoleFields');
+  if(!customRoles.length){container.innerHTML='';return;}
+  const peopleOpts='<option value="">— Select —</option>'+db.people.map(p=>`<option value="${p.id}">${p.name} (${p.role})</option>`).join('');
+  const assignments=existingAssignments||{};
+  let html='';
+  for(let i=0;i<customRoles.length;i+=2){
+    html+='<div class="form-row">';
+    html+=`<div class="form-group"><label>${customRoles[i]}</label><select id="f-podCustom-${encodeURIComponent(customRoles[i])}">${peopleOpts}</select></div>`;
+    if(customRoles[i+1])html+=`<div class="form-group"><label>${customRoles[i+1]}</label><select id="f-podCustom-${encodeURIComponent(customRoles[i+1])}">${peopleOpts}</select></div>`;
+    html+='</div>';
+  }
+  container.innerHTML=html;
+  customRoles.forEach(role=>{
+    const sel=document.getElementById('f-podCustom-'+encodeURIComponent(role));
+    if(sel&&assignments[role])sel.value=assignments[role];
+  });
+}
+
 function openNewPodcastModal(){
   editingPodcastId = null;
   document.getElementById('podcastModalTitle').textContent='New Podcast';
@@ -2162,6 +2202,7 @@ function openNewPodcastModal(){
   document.getElementById('savePodcastBtn').textContent='Create Podcast + Episodes';
   populatePodcastTypeDropdown('Interview');
   ['f-podEP','f-podProducer','f-podAP','f-podEditor','f-podAccounts'].forEach(function(fid){var sel=document.getElementById(fid);if(!sel)return;var emptyLabel=fid==='f-podAP'?'— None —':'— Select —';sel.innerHTML='<option value="">'+emptyLabel+'</option>'+db.people.map(p=>'<option value="'+p.id+'">'+p.name+' ('+p.role+')</option>').join('');});
+  updatePodcastCustomRoles();
   openModal('modalPodcast');
 }
 
@@ -2188,6 +2229,7 @@ function openEditPodcastModal(id){
     var sel=document.getElementById(selId);if(!sel)return;
     sel.innerHTML='<option value="">'+emptyLabel+'</option>'+db.people.map(function(per){return '<option value="'+per.id+'"'+(p[key]===per.id?' selected':'')+'>'+per.name+' ('+per.role+')</option>';}).join('');
   });
+  updatePodcastCustomRoles(p.custom_role_assignments||{});
   openModal('modalPodcast');
 }
 
@@ -2201,7 +2243,7 @@ async function savePodcast(){
     try{
       const oldPod = podById(editingPodcastId);
       const newGdrive=document.getElementById('f-podGdrive').value.trim()||null;
-      const data={name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:newGdrive};
+      const data={name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:newGdrive,custom_role_assignments:getCustomRoleAssignments()};
 
       // Detect which roles changed
       const roleMap = {'Executive Producer':'ep','Producer':'producer','Assistant Producer':'ap','Editor':'editor','Accounts':'accounts'};
@@ -2250,10 +2292,11 @@ async function savePodcast(){
   const btn=document.getElementById('savePodcastBtn');btn.disabled=true;btn.textContent='Creating…';setSync('syncing');
   try{
     const gdriveUrl=document.getElementById('f-podGdrive').value.trim()||null;
-    const pod={id:uid(),name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:gdriveUrl};
+    const pod={id:uid(),name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:gdriveUrl,custom_role_assignments:getCustomRoleAssignments()};
     await api.post('podcasts',pod);db.podcasts.push(pod);
     const tmpls=getTemplatesForType(pod.type),interval=freqDays(pod.frequency),sn=String(pod.season).padStart(2,'0');
     const isFullProd=pod.type==='Full Production';
+    const rm=buildRoleMap(pod);
     for(let i=0;i<pod.episode_count;i++){
       const epLaunch=addDays(ld,i*interval),en=String(i+1).padStart(2,'0');
       const ep={id:uid(),podcast_id:pod.id,number:i+1,title:'',default_title:`S${sn}E${en}`,launch_date:epLaunch,status:'To Do'};
@@ -2261,7 +2304,6 @@ async function savePodcast(){
       // Full Production: series tasks only on episode 1 (counted from series launch date)
       const activeTmpls=isFullProd&&i>0?tmpls.filter(t=>!t.series):tmpls;
       for(const tmpl of activeTmpls){
-        const rm={'Executive Producer':pod.ep,'Producer':pod.producer,'Assistant Producer':pod.ap||null,'Editor':pod.editor,'Accounts':pod.accounts||null};
         const launchRef=tmpl.series?ld:epLaunch;
         const task={id:uid(),episode_id:ep.id,name:tmpl.name,role:tmpl.role,assigned_to:rm[tmpl.role]||null,status:'To Do',due_date:tmpl.days>0?addDays(launchRef,-tmpl.days):launchRef,start_date:null,task_order:tmpl.order,notes:''};
         await api.post('tasks',task);db.tasks.push(task);
@@ -2292,8 +2334,8 @@ async function saveEpisode(){
     const tmpls=getTemplatesForType(pod.type);
     // Full Production: individually-added episodes only get per-episode tasks (series tasks live on ep1)
     const activeTmpls=pod.type==='Full Production'?tmpls.filter(t=>!t.series):tmpls;
+    const rm=buildRoleMap(pod);
     for(const tmpl of activeTmpls){
-      const rm={'Executive Producer':pod.ep,'Producer':pod.producer,'Assistant Producer':pod.ap||null,'Editor':pod.editor,'Accounts':pod.accounts||null};
       const task={id:uid(),episode_id:ep.id,name:tmpl.name,role:tmpl.role,assigned_to:rm[tmpl.role]||null,status:'To Do',due_date:tmpl.days>0?addDays(dv,-tmpl.days):dv,start_date:null,task_order:tmpl.order,notes:''};
       await api.post('tasks',task);db.tasks.push(task);
     }
@@ -3092,8 +3134,8 @@ async function saveBatchEpisodes(){
       const ep = {id:uid(),podcast_id:batchPodcastId,number:startNum+i,title:'',default_title:`S${sn}E${en}`,launch_date:epLaunch,status:'To Do'};
       await api.post('episodes',ep);
       db.episodes.push(ep);
+      const rm=buildRoleMap(pod);
       for(const tmpl of activeTmpls){
-        const rm={'Executive Producer':pod.ep,'Producer':pod.producer,'Assistant Producer':pod.ap||null,'Editor':pod.editor,'Accounts':pod.accounts};
         const task={id:uid(),episode_id:ep.id,name:tmpl.name,role:tmpl.role,assigned_to:rm[tmpl.role]||null,status:'To Do',due_date:tmpl.days>0?addDays(epLaunch,-tmpl.days):epLaunch,start_date:null,task_order:tmpl.order,notes:''};
         await api.post('tasks',task);
         db.tasks.push(task);
