@@ -796,7 +796,7 @@ const TEMPLATES={
   ]
 };
 
-let db={people:[],podcasts:[],episodes:[],tasks:[],todos:[],taskTemplates:[],companies:[]};
+let db={people:[],podcasts:[],episodes:[],tasks:[],todos:[],taskTemplates:[],companies:[],roles:[]};
 let currentView='dashboard',currentPodcastId=null,currentEpisodeId=null,editingPersonId=null,editingTaskId=null,currentUser='all';
 let filterStatuses=new Set(),filterPodcasts=new Set(),filterRoles=new Set(),filterPersonIds=new Set();
 let ganttDayWidth=28,ganttExpanded={};
@@ -836,21 +836,21 @@ function setSync(s){const el=document.getElementById('syncIndicator');if(s==='sy
 function notify(msg,err){const el=document.createElement('div');el.className='notify'+(err?' err':'');el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);}
 
 async function loadAll(){
-  const[people,podcasts,episodes,tasks,todos,taskTemplates,companies]=await Promise.all([
+  const[people,podcasts,episodes,tasks,todos,taskTemplates,companies,roles]=await Promise.all([
     api.get('people','order=name'),api.get('podcasts','order=created_at'),api.get('episodes','order=number'),
     api.get('tasks','order=task_order'),api.get('todos','order=due_date'),
     api.get('task_templates','order=task_order').catch(()=>null),
-    api.get('companies','order=name').catch(()=>null)
+    api.get('companies','order=name').catch(()=>null),
+    api.get('roles','order=name').catch(()=>null)
   ]);
   db.people=people||[];db.podcasts=podcasts||[];db.episodes=episodes||[];db.tasks=tasks||[];db.todos=todos||[];
-  db.taskTemplates=taskTemplates||[];db.companies=companies||[];
+  db.taskTemplates=taskTemplates||[];db.companies=companies||[];db.roles=roles||[];
 }
 
 const BUILT_IN_TASK_ROLES=['Executive Producer','Producer','Editor','Marketer','Accounts'];
 const BUILT_IN_PERSON_ROLES=['Executive Producer','Producer','Editor','Marketer','Accounts','Admin'];
 
-function getCustomRoles(){return JSON.parse(localStorage.getItem('bengo_custom_roles')||'[]');}
-function saveCustomRoles(roles){localStorage.setItem('bengo_custom_roles',JSON.stringify(roles));}
+function getCustomRoles(){return db.roles.map(r=>r.name);}
 function getTaskRoles(){return[...BUILT_IN_TASK_ROLES,...getCustomRoles().filter(r=>!BUILT_IN_TASK_ROLES.includes(r))];}
 function getPersonRoles(){return[...BUILT_IN_PERSON_ROLES,...getCustomRoles().filter(r=>!BUILT_IN_PERSON_ROLES.includes(r))];}
 function roleOptions(roles,selected){return roles.map(r=>`<option${r===selected?' selected':''}>${r}</option>`).join('');}
@@ -1683,28 +1683,35 @@ function renderSettingsRoles(){
   document.getElementById('settingsContent').innerHTML=html;
 }
 
-function addCustomRole(){
+async function addCustomRole(){
   const name=document.getElementById('f-newRole').value.trim();
   if(!name){notify('Enter a role name',true);return;}
   const all=getPersonRoles();
   if(all.map(r=>r.toLowerCase()).includes(name.toLowerCase())){notify('That role already exists',true);return;}
-  const custom=getCustomRoles();
-  custom.push(name);
-  saveCustomRoles(custom);
-  notify(`Role "${name}" added`);
-  renderSettingsRoles();
-  // Refresh any open dropdowns that list roles
-  if(document.getElementById('msDropRole'))populateRoleFilter();
+  setSync('syncing');
+  try{
+    await api.post('roles',{name});
+    db.roles.push({name});
+    setSync('live');
+    notify(`Role "${name}" added`);
+    renderSettingsRoles();
+    if(document.getElementById('msDropRole'))populateRoleFilter();
+  }catch(e){setSync('error');notify('Could not save role: '+e.message,true);}
 }
 
-function deleteCustomRole(encoded){
+async function deleteCustomRole(encoded){
   const name=decodeURIComponent(encoded);
   const peopleCount=db.people.filter(p=>p.role===name).length;
   if(peopleCount>0){notify(`Can't delete — ${peopleCount} team member${peopleCount!==1?'s':''} use this role`,true);return;}
   if(!confirm(`Delete role "${name}"?`))return;
-  saveCustomRoles(getCustomRoles().filter(r=>r!==name));
-  notify(`Role "${name}" deleted`);
-  renderSettingsRoles();
+  setSync('syncing');
+  try{
+    await api.del('roles',`name=eq.${encodeURIComponent(name)}`);
+    db.roles=db.roles.filter(r=>r.name!==name);
+    setSync('live');
+    notify(`Role "${name}" deleted`);
+    renderSettingsRoles();
+  }catch(e){setSync('error');notify('Could not delete role: '+e.message,true);}
 }
 
 function populateRoleFilter(){
