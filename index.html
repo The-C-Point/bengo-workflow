@@ -434,7 +434,9 @@
     <div class="form-row"><div class="form-group"><label>Accounts</label><select id="f-podAccounts"></select></div></div>
     <div id="podCustomRoleFields"></div>
     <div class="form-row"><div class="form-group" style="grid-column:1/-1"><label>Launch Frequency</label><select id="f-podFreq" style="max-width:220px"><option>Weekly</option><option>BiWeekly</option><option>Monthly</option></select></div></div>
-    <div class="form-row"><div class="form-group"><label>Season</label><input type="number" id="f-podSeason" value="1" min="1"></div><div class="form-group"><label>Number of Episodes</label><input type="number" id="f-podEpCount" value="6" min="1"></div></div>
+    <div class="form-row"><div class="form-group"><label>Season</label><input type="number" id="f-podSeason" value="1" min="1"></div><div class="form-group"><label>Number of Episodes <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 12)</span></label><input type="number" id="f-podEpCount" value="6" min="1" max="12"></div></div>
+    <div class="form-row"><div class="form-group" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer;font-weight:400"><input type="checkbox" id="f-podOngoing" style="width:auto;accent-color:var(--accent)" onchange="toggleOngoingFields()"> This is an ongoing series (episodes auto-added as the podcast progresses)</label></div></div>
+    <div class="form-row hidden" id="ongoingFields"><div class="form-group"><label>Starting episode number</label><input type="number" id="f-podStartEp" value="1" min="1" placeholder="e.g. 326"></div><div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:6px"><p style="font-size:11px;color:var(--text-muted);line-height:1.5">The real episode number of the first episode being added. The next episode is created automatically when "Podcast Scheduled" is marked complete.</p></div></div>
     <div class="form-row"><div class="form-group"><label>Episode 1 Launch Date</label><input type="date" id="f-podLaunchDate"></div><div class="form-group" style="display:flex;align-items:flex-end"><p style="font-size:11px;color:var(--text-muted);line-height:1.5">All episodes and tasks auto-generated from this date.</p></div></div>
     <div class="form-group"><label>Google Drive Production Folder (optional)</label><input type="url" id="f-podGdrive" placeholder="https://drive.google.com/…"></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="savePodcastBtn" onclick="savePodcast()">Create Podcast + Episodes</button></div>
@@ -453,7 +455,7 @@
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px" id="batchSubtitle"></p>
     <div class="form-group">
       <label>How many episodes to add?</label>
-      <input type="number" id="f-batchCount" value="4" min="1" max="52">
+      <input type="number" id="f-batchCount" value="4" min="1" max="12">
     </div>
     <div id="batchPreview" style="font-size:12px;color:var(--text-muted);margin-top:4px;min-height:20px"></div>
     <p style="font-size:11px;color:var(--text-dim);margin-top:12px">Episodes will follow on from the last existing episode using the podcast's frequency. All tasks will be auto-generated.</p>
@@ -1081,7 +1083,7 @@ function renderPodcasts(){
     return`<div class="card" onclick="navigate('episodes','${p.id}')">
       <div class="card-actions"><div class="icon-btn" onclick="event.stopPropagation();openEditPodcastModal('${p.id}')">✏️</div><div class="icon-btn" onclick="event.stopPropagation();openBatchEpisodesModal('${p.id}')" title="Add batch of episodes">➕</div><div class="icon-btn" onclick="event.stopPropagation();openReschedulePodcastModal('${p.id}')" title="Reschedule all episodes">📅</div><div class="icon-btn danger" onclick="event.stopPropagation();deletePodcast('${p.id}')">🗑</div></div>
       <div class="card-label">${p.company||''} ${p.contact?'· '+p.contact:''}${folderBtn}</div>
-      <div class="card-title">${p.name}</div>
+      <div class="card-title">${p.name}${p.is_ongoing?` <span title="Ongoing series — next episode: Ep ${p.next_episode_number||'?'}" style="font-size:12px;font-weight:400;color:var(--accent)">🔄 Ep ${p.next_episode_number||'?'} next</span>`:''}</div>
       <div class="card-meta">
         <span class="card-badge badge-${(p.type||'interview').toLowerCase()}">${p.type}</span><br>
         ${ec} episode${ec!==1?'s':''} · Season ${p.season} · ${p.frequency}<br>
@@ -1182,6 +1184,7 @@ async function cycleTask(id){
     await api.patch('tasks',id,{status:t.status});setSync('live');
     saveUndo(async()=>{t.status=prev;await api.patch('tasks',id,{status:prev});});
     renderEpisodeTasks();
+    if(t.status==='Complete'&&t.name==='Podcast Scheduled')await checkAndQueueNextEpisode(t.episode_id);
   }catch(e){setSync('error');notify('Save failed',true);}
 }
 
@@ -1195,6 +1198,7 @@ async function qCycle(id){
     await api.patch('tasks',id,{status:t.status});setSync('live');
     saveUndo(async()=>{t.status=prev;await api.patch('tasks',id,{status:prev});});
     if(currentView==='dashboard')renderDashboard();else if(currentView==='tasks')renderAllTasks();else if(currentView==='mytasks')renderMyTasks();
+    if(t.status==='Complete'&&t.name==='Podcast Scheduled')await checkAndQueueNextEpisode(t.episode_id);
   }catch(e){setSync('error');notify('Save failed',true);}
 }
 
@@ -2191,6 +2195,44 @@ function closeModalOnOverlay(e){if(e.target.id==='modalOverlay')closeModal();}
 
 let editingPodcastId = null;
 
+function toggleOngoingFields(){
+  const checked=document.getElementById('f-podOngoing').checked;
+  document.getElementById('ongoingFields').classList.toggle('hidden',!checked);
+}
+
+async function checkAndQueueNextEpisode(episodeId){
+  const ep=epById(episodeId);if(!ep)return;
+  const pod=podById(ep.podcast_id);if(!pod||!pod.is_ongoing)return;
+  const activeEps=db.episodes.filter(e=>e.podcast_id===pod.id&&epStatus(e.id)!=='Complete');
+  if(activeEps.length>=12)return;
+  const allEps=db.episodes.filter(e=>e.podcast_id===pod.id).sort((a,b)=>a.number-b.number);
+  const lastEp=allEps[allEps.length-1];
+  if(!lastEp||!lastEp.launch_date)return;
+  const interval=freqDays(pod.frequency);
+  const nextLaunch=addDays(lastEp.launch_date,interval);
+  const nextNum=pod.next_episode_number||(lastEp.number+1);
+  const sn=String(pod.season).padStart(2,'0');
+  setSync('syncing');
+  try{
+    const newEp={id:uid(),podcast_id:pod.id,number:nextNum,title:'',default_title:`S${sn}E${nextNum}`,launch_date:nextLaunch,status:'To Do'};
+    await api.post('episodes',newEp);db.episodes.push(newEp);
+    const tmpls=getTemplatesForType(pod.type);
+    const activeTmpls=tmpls.filter(t=>!t.series);
+    const rm=buildRoleMap(pod);
+    for(const tmpl of activeTmpls){
+      const task={id:uid(),episode_id:newEp.id,name:tmpl.name,role:tmpl.role,assigned_to:rm[tmpl.role]||null,status:'To Do',due_date:tmpl.days>0?addDays(nextLaunch,-tmpl.days):nextLaunch,start_date:null,task_order:tmpl.order,notes:''};
+      await api.post('tasks',task);db.tasks.push(task);
+    }
+    const newNextNum=nextNum+1;
+    await api.patch('podcasts',pod.id,{next_episode_number:newNextNum});
+    pod.next_episode_number=newNextNum;
+    setSync('live');
+    notify(`Episode ${nextNum} added to pipeline automatically`);
+    if(currentView==='episodes'&&currentPodcastId===pod.id)renderEpisodes();
+    else if(currentView==='podcasts')renderPodcasts();
+  }catch(e){setSync('error');notify('Could not queue next episode: '+e.message,true);}
+}
+
 function populatePodcastTypeDropdown(selectedType){
   document.getElementById('f-podType').innerHTML=getPodcastTypes().map(t=>`<option${t.name===selectedType?' selected':''}>${t.name}</option>`).join('');
 }
@@ -2233,6 +2275,9 @@ function openNewPodcastModal(){
   document.getElementById('f-podSeason').value=1;document.getElementById('f-podEpCount').value=6;document.getElementById('f-podLaunchDate').value='';
   document.getElementById('f-podLaunchDate').closest('.form-row').style.display='';
   document.getElementById('savePodcastBtn').textContent='Create Podcast + Episodes';
+  document.getElementById('f-podOngoing').checked=false;
+  document.getElementById('f-podStartEp').value=1;
+  document.getElementById('ongoingFields').classList.add('hidden');
   populatePodcastTypeDropdown('Interview');
   ['f-podEP','f-podProducer','f-podAP','f-podEditor','f-podAccounts'].forEach(function(fid){var sel=document.getElementById(fid);if(!sel)return;var emptyLabel=fid==='f-podAP'?'— None —':'— Select —';sel.innerHTML='<option value="">'+emptyLabel+'</option>'+db.people.map(p=>'<option value="'+p.id+'">'+p.name+' ('+p.role+')</option>').join('');});
   updatePodcastCustomRoles();
@@ -2262,6 +2307,9 @@ function openEditPodcastModal(id){
     var sel=document.getElementById(selId);if(!sel)return;
     sel.innerHTML='<option value="">'+emptyLabel+'</option>'+db.people.map(function(per){return '<option value="'+per.id+'"'+(p[key]===per.id?' selected':'')+'>'+per.name+' ('+per.role+')</option>';}).join('');
   });
+  document.getElementById('f-podOngoing').checked=!!p.is_ongoing;
+  document.getElementById('f-podStartEp').value=p.start_episode_number||1;
+  document.getElementById('ongoingFields').classList.toggle('hidden',!p.is_ongoing);
   updatePodcastCustomRoles(p.custom_role_assignments||{});
   openModal('modalPodcast');
 }
@@ -2276,7 +2324,7 @@ async function savePodcast(){
     try{
       const oldPod = podById(editingPodcastId);
       const newGdrive=document.getElementById('f-podGdrive').value.trim()||null;
-      const data={name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:newGdrive,custom_role_assignments:getCustomRoleAssignments()};
+      const data={name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:newGdrive,custom_role_assignments:getCustomRoleAssignments(),is_ongoing:document.getElementById('f-podOngoing').checked,start_episode_number:parseInt(document.getElementById('f-podStartEp').value)||1};
 
       // Detect which roles changed
       const roleMap = {'Executive Producer':'ep','Producer':'producer','Assistant Producer':'ap','Editor':'editor','Accounts':'accounts'};
@@ -2325,17 +2373,20 @@ async function savePodcast(){
   const btn=document.getElementById('savePodcastBtn');btn.disabled=true;btn.textContent='Creating…';setSync('syncing');
   try{
     const gdriveUrl=document.getElementById('f-podGdrive').value.trim()||null;
-    const pod={id:uid(),name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:gdriveUrl,custom_role_assignments:getCustomRoleAssignments()};
+    const isOngoing=document.getElementById('f-podOngoing').checked;
+    const startEpNum=parseInt(document.getElementById('f-podStartEp').value)||1;
+    const epCount=Math.min(parseInt(document.getElementById('f-podEpCount').value)||6,12);
+    const pod={id:uid(),name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:epCount,frequency:document.getElementById('f-podFreq').value,google_folder_url:gdriveUrl,custom_role_assignments:getCustomRoleAssignments(),is_ongoing:isOngoing,start_episode_number:startEpNum,next_episode_number:isOngoing?startEpNum+epCount:null};
     await api.post('podcasts',pod);db.podcasts.push(pod);
     const tmpls=getTemplatesForType(pod.type),interval=freqDays(pod.frequency),sn=String(pod.season).padStart(2,'0');
-    const isFullProd=pod.type==='Full Production';
     const rm=buildRoleMap(pod);
-    for(let i=0;i<pod.episode_count;i++){
-      const epLaunch=addDays(ld,i*interval),en=String(i+1).padStart(2,'0');
-      const ep={id:uid(),podcast_id:pod.id,number:i+1,title:'',default_title:`S${sn}E${en}`,launch_date:epLaunch,status:'To Do'};
+    for(let i=0;i<epCount;i++){
+      const epNum=startEpNum+i;
+      const epLaunch=addDays(ld,i*interval);
+      const ep={id:uid(),podcast_id:pod.id,number:epNum,title:'',default_title:`S${sn}E${epNum}`,launch_date:epLaunch,status:'To Do'};
       await api.post('episodes',ep);db.episodes.push(ep);
-      // Full Production: series tasks only on episode 1 (counted from series launch date)
-      const activeTmpls=isFullProd&&i>0?tmpls.filter(t=>!t.series):tmpls;
+      // Series tasks on episode 1 only (applies to all types)
+      const activeTmpls=i>0?tmpls.filter(t=>!t.series):tmpls;
       for(const tmpl of activeTmpls){
         const launchRef=tmpl.series?ld:epLaunch;
         const task={id:uid(),episode_id:ep.id,name:tmpl.name,role:tmpl.role,assigned_to:rm[tmpl.role]||null,status:'To Do',due_date:tmpl.days>0?addDays(launchRef,-tmpl.days):launchRef,start_date:null,task_order:tmpl.order,notes:''};
