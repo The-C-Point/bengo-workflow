@@ -434,7 +434,7 @@
     <div class="form-row"><div class="form-group"><label>Accounts</label><select id="f-podAccounts"></select></div></div>
     <div id="podCustomRoleFields"></div>
     <div class="form-row"><div class="form-group" style="grid-column:1/-1"><label>Launch Frequency</label><select id="f-podFreq" style="max-width:220px"><option>Weekly</option><option>BiWeekly</option><option>Monthly</option></select></div></div>
-    <div class="form-row"><div class="form-group"><label>Season</label><input type="number" id="f-podSeason" value="1" min="1"></div><div class="form-group"><label>Number of Episodes <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 12)</span></label><input type="number" id="f-podEpCount" value="6" min="1" max="12"></div></div>
+    <div class="form-row"><div class="form-group"><label>Season</label><input type="number" id="f-podSeason" value="1" min="1"></div><div class="form-group"><label>Number of Episodes <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 12)</span></label><input type="number" id="f-podEpCount" value="6" min="1" max="12"><p id="epCountNote" style="font-size:11px;color:var(--accent);margin-top:4px;line-height:1.4"></p></div></div>
     <div class="form-row"><div class="form-group" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer;font-weight:400"><input type="checkbox" id="f-podOngoing" style="width:auto;accent-color:var(--accent)" onchange="toggleOngoingFields()"> This is an ongoing series (episodes auto-added as the podcast progresses)</label></div></div>
     <div class="form-row hidden" id="ongoingFields"><div class="form-group"><label>Starting episode number</label><input type="number" id="f-podStartEp" value="1" min="1" placeholder="e.g. 326"></div><div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:6px"><p style="font-size:11px;color:var(--text-muted);line-height:1.5">The real episode number of the first episode being added. The next episode is created automatically when "Podcast Scheduled" is marked complete.</p></div></div>
     <div class="form-row"><div class="form-group"><label>Episode 1 Launch Date</label><input type="date" id="f-podLaunchDate"></div><div class="form-group" style="display:flex;align-items:flex-end"><p style="font-size:11px;color:var(--text-muted);line-height:1.5">All episodes and tasks auto-generated from this date.</p></div></div>
@@ -2198,6 +2198,15 @@ let editingPodcastId = null;
 function toggleOngoingFields(){
   const checked=document.getElementById('f-podOngoing').checked;
   document.getElementById('ongoingFields').classList.toggle('hidden',!checked);
+  const epCountField=document.getElementById('f-podEpCount');
+  const epCountNote=document.getElementById('epCountNote');
+  if(checked){
+    epCountField.value=12;epCountField.disabled=true;
+    epCountNote.textContent='12 episodes will be created to start. The next episode is added automatically each time "Podcast Scheduled" is marked complete.';
+  } else {
+    epCountField.disabled=false;
+    epCountNote.textContent='';
+  }
 }
 
 async function checkAndQueueNextEpisode(episodeId){
@@ -2278,6 +2287,8 @@ function openNewPodcastModal(){
   document.getElementById('f-podOngoing').checked=false;
   document.getElementById('f-podStartEp').value=1;
   document.getElementById('ongoingFields').classList.add('hidden');
+  document.getElementById('f-podEpCount').disabled=false;
+  document.getElementById('epCountNote').textContent='';
   populatePodcastTypeDropdown('Interview');
   ['f-podEP','f-podProducer','f-podAP','f-podEditor','f-podAccounts'].forEach(function(fid){var sel=document.getElementById(fid);if(!sel)return;var emptyLabel=fid==='f-podAP'?'— None —':'— Select —';sel.innerHTML='<option value="">'+emptyLabel+'</option>'+db.people.map(p=>'<option value="'+p.id+'">'+p.name+' ('+p.role+')</option>').join('');});
   updatePodcastCustomRoles();
