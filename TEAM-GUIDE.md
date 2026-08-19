@@ -6,7 +6,9 @@ Your quick reference for using the app day to day.
 
 ## Getting in
 
-Open the app in your browser. Click your name on the login screen to get started — no password needed.
+Open the app in your browser. Click your name on the login screen, then enter your password.
+
+If no password has been set for your account yet, clicking your name will log you straight in. Ask Steve or Emma to set one for you via Settings → Users.
 
 **Admins** (Steve and Emma) can see everything and filter by any person. **Everyone else** sees only their own tasks.
 
@@ -20,6 +22,8 @@ Open the app in your browser. Click your name on the login screen to get started
 - **Status** — defaults to open tasks (everything except Complete). Tick multiple statuses at once — e.g. "In Review" and "Waiting / Blocked" together.
 - **Podcast** — filter by one or more podcasts. Choose **— Standalone —** to see tasks not tied to any podcast.
 - **Role** — filter by one or more roles (Producer, Editor, etc.).
+
+To clear a single filter, open its dropdown and click **Clear** at the top. To reset all filters at once, click **✕ Clear filters** in the filter bar (it only appears when at least one filter is active).
 
 Switch between Table and Kanban views using the toggle top-right.
 
@@ -56,12 +60,15 @@ Click a podcast → click an episode to see all its tasks. From here you can:
 - Add an ad hoc task (+ Ad Hoc Task button)
 - Notify the team by email (📧 Notify Team button)
 - Reschedule the episode (📅 icon on the episodes list) — all task dates shift automatically
+- Reschedule the entire podcast (📅 button in the topbar or on the podcast card) — shifts every episode launch date and every task due date by the same number of days
 
 ---
 
 ## Podcasts
 
 **New Podcast** creates the podcast, all episodes, and all tasks in one go. Choose the type carefully — it determines which task template is used.
+
+**Ongoing series** — tick the "This is an ongoing series" box for a podcast that runs indefinitely. The app creates 12 episodes to start, then adds the next one automatically whenever "Podcast Scheduled" is marked complete — so there are always up to 12 active episodes in the pipeline. Ongoing podcasts show a 🔄 badge on the card.
 
 You can paste a **Google Drive folder link** when creating a podcast (or add it later by editing). A 📁 icon will appear on the podcast card for quick access. A to-do is automatically created to remind the team to set up the folder — it ticks itself off once the link is added.
 
@@ -199,3 +206,4 @@ View all types, edit descriptions, and add custom types for workflows beyond the
 - The **Overdue** count on the dashboard updates live — aim to keep it at zero.
 - Episode titles are editable inline on the episodes list — just click and type.
 - The **↩ Oh Crap** button only remembers the *last* action — if you do two things, you can only undo the most recent one.
+- The **↻** button next to the sync indicator (bottom of the sidebar) refreshes all data from the database without reloading the page — useful if a colleague has just made changes and you want to see them immediately.

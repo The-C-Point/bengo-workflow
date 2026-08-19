@@ -137,6 +137,22 @@ See CLAUDE.md for full schema.
 - Task templates now loaded from Supabase `task_templates` table at startup (falls back to hardcoded if empty)
 - Podcast creation modal type dropdown now dynamic — picks up custom types automatically
 
+### 19 August 2026
+- **Ongoing series** — new checkbox on podcast creation form; episode count locked to 12; "Starting episode number" field for real episode numbers (e.g. 326); when "Podcast Scheduled" task is marked Complete the next episode is automatically created if fewer than 12 active episodes remain; 🔄 badge on podcast cards shows which episode is next
+- **Password protection** — admin sets each person's password in Settings → Users; login screen prompts for password; 📧 "Send login instructions" button emails welcome message with app link
+- **Custom role assignments on podcasts** — non-standard roles (e.g. Social Media Editor) can be added when creating/editing a podcast; stored as JSONB `custom_role_assignments` column; tasks are assigned correctly on episode creation
+- **Roles moved to Supabase** — custom roles shared across all users (was localStorage); addCustomRole/deleteCustomRole now async; applied to both Bengo and Bespoken
+- SQL required: `ALTER TABLE people ADD COLUMN IF NOT EXISTS password text;` and `ALTER TABLE podcasts ADD COLUMN IF NOT EXISTS custom_role_assignments jsonb;`
+
+### 17 August 2026
+- **Filter clear buttons** — each filter dropdown (person, status, podcast, role) now has a "Clear" link at the top; a global "✕ Clear filters" button appears in the filter bar whenever any filter is active
+- **Date picker icon fix** — added `color-scheme:dark` to `input[type=date]` so the calendar icon renders in light colour on the dark-themed inputs (was black on dark grey, hard to see)
+- **Podcast-level reschedule** — 📅 button on every podcast card (and topbar in Episodes view) opens a modal to shift ALL episode launch dates and task due dates by N days forward or back in one operation; live preview of what will change before confirming
+- **Resend alert removed** — Settings email tab now shows "✓ Resend configured via Netlify" rather than "No Resend API key configured" (applied to both Bengo and Bespoken)
+- **Sync button** — ↻ button next to the sync indicator in the sidebar; triggers `loadAll()` and re-renders current view without a full page reload; useful when another user has made changes
+- **Roles moved to Supabase** — custom roles are now stored in the `roles` Supabase table instead of browser localStorage, so all users share the same role list; `addCustomRole` and `deleteCustomRole` are now async and write to Supabase; applied to both Bengo and Bespoken
+- **RLS discovery and fix** — traced an issue where Steve couldn't see task templates: Supabase RLS was enabled on all tables with no permissive SELECT policy for the anon role, causing `loadAll()` to silently return empty arrays; fix: disable RLS on all tables in Supabase dashboard (internal app, no public exposure concern)
+
 ### 13 August 2026
 - **Consolidated nav** — My Tasks and To-Do removed as separate nav items; All Tasks is now the single task hub for everyone
 - **All Tasks defaults to self** — opens showing logged-in user's tasks; non-admins are locked to their own view (person filter hidden); admins can switch to other people or use "Show everyone" to clear the filter
