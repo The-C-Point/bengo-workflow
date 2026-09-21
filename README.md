@@ -14,13 +14,12 @@ Internal workflow tool for **Bengo Media** (Dream Together Limited). Manages pod
 - **Tasks** — auto-generated from templates per podcast type; assignable, status-trackable, with due dates counted back from launch
 - **Task templates** — Interview, Solo, Panel, Scripted, Full Production (see below)
 - **Episode rescheduling** — shift launch date and all task due dates cascade automatically
-- **All Tasks view** — table and Kanban views, filterable by status / podcast / role; bulk status, assignee, and date-shift updates
-- **My Tasks** — per-person view of open episode tasks and to-dos
-- **To-Do** — freestanding tasks (not tied to an episode); table and Kanban views; CSV import
+- **All Tasks view** — central task hub; defaults to logged-in user's tasks; multi-select filters for person, status, podcast, and role; + Add Task (standalone, series, specific episode, or all episodes); CSV import; table and Kanban views; bulk status, assignee, and date-shift updates
 - **Gantt chart** — canvas-based, zoomable, grouped by podcast; shows episode bars and task dots
-- **People** — add/edit team members; roles drive task assignment
+- **Companies** — full CRM view: company cards with registration number, VAT, addresses, up to four contacts (main, accounts, second, third), notes; company detail view with linked podcasts; add podcast pre-fills company name
+- **Settings** (admin only) — four tabs: **Users** (team member management), **Roles** (add custom roles e.g. Marketing Assistant), **Task Templates** (view, add, edit, delete, export and import per type via CSV), **Podcast Types** (descriptions, add custom types)
 - **Dashboard** — overdue count, overall completion %, team capacity, podcast progress, open task list
-- **Email notifications** — via Resend; episode team notify and urgent (3-day) reminders
+- **Email notifications** — via Resend; episode team notify, urgent (3-day) reminders, and reassignment alerts
 
 ### Podcast types and task templates
 
@@ -120,3 +119,54 @@ See CLAUDE.md for full schema.
 - Added **Per-view search** — filter-as-you-type on All Tasks, My Tasks, To-Dos, and Companies; searches name, podcast, company, notes, assignee
 - Added **Undo (Oh Crap button)** — fixed bottom-left button; undoes last status cycle, bulk update, or Kanban quick-edit; auto-hides after 12 seconds
 - Added **Google Drive folder link** — URL field on podcast modal; 📁 icon on podcast cards; auto-creates "Set up Google Drive production folder" to-do on new podcast (pre-completed if URL provided); auto-completes that to-do when URL is added on edit
+
+### 29 July 2026 (session 3)
+- Added **Contacts view** — 👤 nav item (admin only); aggregates all contacts across every company into a searchable table (Name, Role, Company, Phone, Email); View button opens individual contact detail page; Company → button navigates to parent company; contact detail shows full info with back links to contacts list and company record
+- Fixed **search input focus loss** in Companies view — typing more than one character now works correctly; cursor position is preserved across re-renders
+- Started **Bespoken Media duplicate** (`bespoken-workflow.html`) — full rebrand: light background, dark navy (#031a39) sidebar, Sora headings, Lato body, yellow→orange→pink gradient; all "Bengo" references replaced; Supabase and Resend keys left as placeholders; localStorage keys renamed to `bespoken_*`
+
+### 29 July 2026 (session 2)
+- Rebuilt **Companies view as CRM** — company cards with reg number, VAT, billing + correspondence addresses, main/accounts/second/third contacts; company detail page; delete blocked if podcasts linked; add podcast from company pre-fills name and contact; orphan podcasts (no matching company record) shown in a separate section
+- New `companies` Supabase table required (see SQL below)
+
+### 29 July 2026
+- Added **Settings area** (admin only) — replaces the People nav item; three tabs: Users, Task Templates, Podcast Types
+- **Task Templates tab**: view/add/edit/delete individual tasks per type; export as CSV; import from CSV (replaces type's task list); Reset to defaults; ● indicator when a type has been customised; built-in fallback to hardcoded templates when no Supabase records exist
+- **Podcast Types tab**: view all types with task counts; edit descriptions; add custom types; delete unused types; "Edit tasks ▸" shortcut into the templates tab
+- **Roles tab**: add custom roles (e.g. Marketing Assistant, Admin Assistant) that appear in the team member form, task template role picker, ad hoc task role picker, and All Tasks filter; built-in roles are locked; custom roles are deletable if no team members use them
+- Task templates now loaded from Supabase `task_templates` table at startup (falls back to hardcoded if empty)
+- Podcast creation modal type dropdown now dynamic — picks up custom types automatically
+
+### 20 September 2026
+- **Bulk edit on episode view** — checkboxes on every task row in the episode tasks view; select-all checkbox in header; sticky bulk bar lets you set status, reassign, or set a specific due date for all selected tasks; undo supported
+- **Episode filter on All Tasks** — new "All Episodes" multi-select dropdown filter in the All Tasks filter bar; cascades with the podcast filter (only shows episodes for selected podcasts)
+- **Date picker on bulk bars** — replaced the "shift by N days" number input on All Tasks, My Tasks, and episode bulk bars with a specific date picker; all selected tasks get set to that exact date
+
+### 19 August 2026
+- **Ongoing series** — new checkbox on podcast creation form; episode count locked to 12; "Starting episode number" field for real episode numbers (e.g. 326); when "Podcast Scheduled" task is marked Complete the next episode is automatically created if fewer than 12 active episodes remain; 🔄 badge on podcast cards shows which episode is next
+- **Password protection** — admin sets each person's password in Settings → Users; login screen prompts for password; 📧 "Send login instructions" button emails welcome message with app link
+- **Custom role assignments on podcasts** — non-standard roles (e.g. Social Media Editor) can be added when creating/editing a podcast; stored as JSONB `custom_role_assignments` column; tasks are assigned correctly on episode creation
+- **Roles moved to Supabase** — custom roles shared across all users (was localStorage); addCustomRole/deleteCustomRole now async; applied to both Bengo and Bespoken
+- SQL required: `ALTER TABLE people ADD COLUMN IF NOT EXISTS password text;` and `ALTER TABLE podcasts ADD COLUMN IF NOT EXISTS custom_role_assignments jsonb;`
+
+### 17 August 2026
+- **Filter clear buttons** — each filter dropdown (person, status, podcast, role) now has a "Clear" link at the top; a global "✕ Clear filters" button appears in the filter bar whenever any filter is active
+- **Date picker icon fix** — added `color-scheme:dark` to `input[type=date]` so the calendar icon renders in light colour on the dark-themed inputs (was black on dark grey, hard to see)
+- **Podcast-level reschedule** — 📅 button on every podcast card (and topbar in Episodes view) opens a modal to shift ALL episode launch dates and task due dates by N days forward or back in one operation; live preview of what will change before confirming
+- **Resend alert removed** — Settings email tab now shows "✓ Resend configured via Netlify" rather than "No Resend API key configured" (applied to both Bengo and Bespoken)
+- **Sync button** — ↻ button next to the sync indicator in the sidebar; triggers `loadAll()` and re-renders current view without a full page reload; useful when another user has made changes
+- **Roles moved to Supabase** — custom roles are now stored in the `roles` Supabase table instead of browser localStorage, so all users share the same role list; `addCustomRole` and `deleteCustomRole` are now async and write to Supabase; applied to both Bengo and Bespoken
+- **RLS discovery and fix** — traced an issue where Steve couldn't see task templates: Supabase RLS was enabled on all tables with no permissive SELECT policy for the anon role, causing `loadAll()` to silently return empty arrays; fix: disable RLS on all tables in Supabase dashboard (internal app, no public exposure concern)
+
+### 13 August 2026
+- **Consolidated nav** — My Tasks and To-Do removed as separate nav items; All Tasks is now the single task hub for everyone
+- **All Tasks defaults to self** — opens showing logged-in user's tasks; non-admins are locked to their own view (person filter hidden); admins can switch to other people or use "Show everyone" to clear the filter
+- **Multi-select filters** — person, status, podcast, and role filters are now checkbox dropdowns; select multiple values at once (e.g. "In Review" + "Waiting / Blocked"); standalone tasks filterable via "— Standalone —" in the podcast filter
+- **+ Add Task from All Tasks** — create any task type from the All Tasks view: standalone (no podcast), series-level (linked to a podcast, no episode), a specific episode, or repeated across all episodes of a podcast
+- **CSV Import moved** — import button now lives in the All Tasks topbar (was in To-Do)
+
+### 29 April 2026
+- Added **Kanban drag and drop** — drag cards between columns on both Tasks and To-Dos kanban boards; saves to Supabase on drop; undo supported; uses `addEventListener`-based approach for reliability
+- Added **Kanban horizontal scroll** — columns have a 220px minimum width; boards scroll horizontally on smaller screens
+- Added **Collapse Complete column** on To-Dos kanban — matches existing behaviour on Tasks kanban; starts collapsed, click strip to expand, ✕ to collapse
+- Set up local preview server via `npx serve` (`.claude/launch.json`)

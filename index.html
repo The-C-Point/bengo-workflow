@@ -72,6 +72,15 @@
   .progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s;}
   .task-filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
   .filter-select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;font-size:12px;font-family:'Varela Round',sans-serif;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px;}
+  .ms-wrap{position:relative;display:inline-block;}
+  .ms-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:6px;cursor:pointer;font-size:12px;min-width:120px;text-align:left;display:inline-flex;align-items:center;justify-content:space-between;gap:8px;font-family:'Varela Round',sans-serif;white-space:nowrap;}
+  .ms-btn:hover{border-color:var(--accent);}
+  .ms-btn.has-filter{border-color:var(--accent);background:var(--surface2);}
+  .ms-drop{position:absolute;top:calc(100% + 4px);left:0;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px;min-width:200px;max-height:260px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;}
+  .ms-drop.open{display:block;}
+  .ms-drop label{display:flex;align-items:center;gap:8px;padding:5px 8px;cursor:pointer;border-radius:5px;font-size:13px;color:var(--text);font-weight:normal;text-transform:none;letter-spacing:0;}
+  .ms-drop label:hover{background:var(--surface2);}
+  .ms-drop input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;flex-shrink:0;}
   .assignee-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--text-muted);}
   .avatar{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#1a1400;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px);}
@@ -81,6 +90,7 @@
   label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;font-weight:500;}
   input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:6px;font-size:13px;font-family:'Varela Round',sans-serif;outline:none;transition:border-color .15s;}
   input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  input[type=date]{color-scheme:dark;}
   .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;}
   .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
@@ -229,8 +239,17 @@
 
 <div class="login-screen hidden" id="loginScreen">
   <div class="login-title">Bengo</div>
-  <div class="login-sub">Who are you?</div>
+  <div class="login-sub" id="loginSub">Who are you?</div>
   <div class="login-grid" id="loginGrid"></div>
+  <div id="loginPasswordPrompt" style="display:none;text-align:center;margin-top:8px">
+    <div style="font-size:14px;color:var(--text-muted);margin-bottom:12px" id="loginPasswordName"></div>
+    <input type="password" id="loginPasswordInput" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitLoginPassword()" style="width:220px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;text-align:center;letter-spacing:2px">
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-ghost" onclick="cancelLoginPassword()">Back</button>
+      <button class="btn" onclick="submitLoginPassword()">Log in</button>
+    </div>
+    <div id="loginPasswordError" style="color:#e74c3c;font-size:13px;margin-top:8px;min-height:18px"></div>
+  </div>
 </div>
 
 <div class="loading-screen" id="loadingScreen">
@@ -251,16 +270,17 @@
       <div class="nav-item" onclick="navigate('contacts')" id="nav-contacts"><span class="nav-icon">👤</span> Contacts</div>
       <div class="nav-item" onclick="navigate('podcasts')" id="nav-podcasts"><span class="nav-icon">🎙</span> Podcasts</div>
       <div class="nav-item" onclick="navigate('tasks')" id="nav-tasks"><span class="nav-icon">✅</span> All Tasks</div>
-      <div class="nav-item" onclick="navigate('mytasks')" id="nav-mytasks"><span class="nav-icon">👤</span> My Tasks</div>
       <div class="nav-item" onclick="navigate('gantt')" id="nav-gantt"><span class="nav-icon">📊</span> Gantt</div>
-      <div class="nav-item" onclick="navigate('todos')" id="nav-todos"><span class="nav-icon">📝</span> To-Do</div>
       <div class="nav-item" onclick="navigate('settings')" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</div>
     </nav>
     <div class="user-switcher">
       <div class="user-label">Viewing as</div>
       <select class="user-select" id="currentUser" onchange="onUserChange()"><option value="all">— All users —</option></select>
     </div>
-    <div class="sync-indicator" id="syncIndicator">● Live</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="sync-indicator" id="syncIndicator">● Live</div>
+      <button onclick="syncAll()" title="Refresh all data from the database" style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:2px 4px;border-radius:4px;font-family:'Varela Round',sans-serif" id="syncBtn">↻</button>
+    </div>
     <div class="sidebar-user" id="sidebarUser" style="display:none">
       <span class="avatar" id="sidebarAvatar">?</span>
       <span class="sidebar-user-name" id="sidebarUserName"></span>
@@ -298,26 +318,38 @@
           <button class="back-btn" onclick="navigate('episodes')">←</button>
           <div><div class="breadcrumb" id="epTaskBreadcrumb"></div><div class="card-title" id="epTaskTitle"></div></div>
         </div>
-        <table><thead><tr><th>Task</th><th>Role</th><th>Assigned To</th><th>Due Date</th><th>Status</th><th>Notes</th></tr></thead><tbody id="episodeTasksBody"></tbody></table>
+        <div id="epBulkBar" class="bulk-bar hidden">
+          <span id="epBulkCount" style="font-size:12px;color:var(--text-muted)"></span>
+          <select class="filter-select" id="epBulkStatus" style="font-size:12px"><option value="">Set status…</option><option>To Do</option><option>In Progress</option><option>In Review</option><option>Waiting / Blocked</option><option>Complete</option></select>
+          <select class="filter-select" id="epBulkAssignee" style="font-size:12px"><option value="">Reassign to…</option></select>
+          <div style="display:flex;align-items:center;gap:6px"><span style="font-size:12px;color:var(--text-muted)">Set due date</span><input type="date" id="epBulkDate" style="font-size:12px;padding:6px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;color-scheme:dark"></div>
+          <button class="btn" style="font-size:12px;padding:6px 14px" onclick="applyEpBulkUpdate()">Apply</button>
+          <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="clearEpBulkSelection()">Clear</button>
+        </div>
+        <table><thead><tr><th style="width:32px"><input type="checkbox" id="selectAllEpTasks" onclick="toggleSelectAllEpTasks(this)" style="accent-color:var(--accent)"></th><th>Task</th><th>Role</th><th>Assigned To</th><th>Due Date</th><th>Status</th><th>Notes</th></tr></thead><tbody id="episodeTasksBody"></tbody></table>
       </div>
 
       <div id="view-tasks" class="hidden">
         <div class="task-filters">
           <input class="search-input" type="text" id="searchTasks" placeholder="Search tasks…" oninput="renderAllTasks()">
-          <select class="filter-select" id="filterStatus" onchange="renderAllTasks()"><option value="">All Statuses</option><option>To Do</option><option>In Progress</option><option>In Review</option><option>Waiting / Blocked</option><option>Complete</option></select>
-          <select class="filter-select" id="filterPodcast" onchange="renderAllTasks()"><option value="">All Podcasts</option></select>
-          <select class="filter-select" id="filterRole" onchange="renderAllTasks()"><option value="">All Roles</option></select>
+          <div class="ms-wrap" id="msWrapPerson"><button class="ms-btn" id="msBtnPerson" onclick="toggleMsFilter('msDropPerson')"><span id="msLabelPerson">My Tasks</span> ▾</button><div class="ms-drop" id="msDropPerson"></div></div>
+          <div class="ms-wrap"><button class="ms-btn" id="msBtnStatus" onclick="toggleMsFilter('msDropStatus')"><span id="msLabelStatus">Open tasks</span> ▾</button><div class="ms-drop" id="msDropStatus"><div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('status')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Clear</button></div><label><input type="checkbox" value="To Do" onchange="onMsChange('status')"> To Do</label><label><input type="checkbox" value="In Progress" onchange="onMsChange('status')"> In Progress</label><label><input type="checkbox" value="In Review" onchange="onMsChange('status')"> In Review</label><label><input type="checkbox" value="Waiting / Blocked" onchange="onMsChange('status')"> Waiting / Blocked</label><label><input type="checkbox" value="Complete" onchange="onMsChange('status')"> Complete</label></div></div>
+          <div class="ms-wrap"><button class="ms-btn" id="msBtnPodcast" onclick="toggleMsFilter('msDropPodcast')"><span id="msLabelPodcast">All Podcasts</span> ▾</button><div class="ms-drop" id="msDropPodcast"></div></div>
+          <div class="ms-wrap"><button class="ms-btn" id="msBtnEpisode" onclick="toggleMsFilter('msDropEpisode')"><span id="msLabelEpisode">All Episodes</span> ▾</button><div class="ms-drop" id="msDropEpisode"></div></div>
+          <div class="ms-wrap"><button class="ms-btn" id="msBtnRole" onclick="toggleMsFilter('msDropRole')"><span id="msLabelRole">All Roles</span> ▾</button><div class="ms-drop" id="msDropRole"></div></div>
+          <button id="clearAllFiltersBtn" onclick="clearAllFilters()" style="display:none;background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:4px 2px;font-family:'Varela Round',sans-serif;white-space:nowrap">✕ Clear filters</button>
           <div class="view-toggle">
             <button class="view-toggle-btn active" id="toggleTable" onclick="setTaskView('table')">≡ Table</button>
             <button class="view-toggle-btn" id="toggleKanban" onclick="setTaskView('kanban')">⊞ Kanban</button>
           </div>
+          <button class="btn" onclick="openAllTaskAdd()" style="margin-left:auto;padding:7px 14px;font-size:12px">+ Add Task</button>
         </div>
         <div id="tasksTableView">
         <div id="bulkActionsBar" class="bulk-bar hidden">
           <span id="bulkCount" style="font-size:12px;color:var(--text-muted)"></span>
           <select class="filter-select" id="bulkStatus" style="font-size:12px"><option value="">Set status…</option><option>To Do</option><option>In Progress</option><option>In Review</option><option>Waiting / Blocked</option><option>Complete</option></select>
           <select class="filter-select" id="bulkAssignee" style="font-size:12px"><option value="">Reassign to…</option></select>
-          <div style="display:flex;align-items:center;gap:6px"><span style="font-size:12px;color:var(--text-muted)">Shift due date by</span><input type="number" id="bulkDays" placeholder="days" style="width:70px;font-size:12px;padding:6px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Varela Round,sans-serif"></div>
+          <div style="display:flex;align-items:center;gap:6px"><span style="font-size:12px;color:var(--text-muted)">Set due date</span><input type="date" id="bulkDate" style="font-size:12px;padding:6px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;color-scheme:dark"></div>
           <button class="btn" style="font-size:12px;padding:6px 14px" onclick="applyBulkUpdate()">Apply</button>
           <button class="btn btn-ghost" style="font-size:12px;padding:6px 14px" onclick="clearBulkSelection()">Clear</button>
         </div>
@@ -404,13 +436,16 @@
 <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOnOverlay(event)">
   <div class="modal hidden" id="modalPodcast">
     <div class="modal-title" id="podcastModalTitle">New Podcast</div>
-    <div class="form-row"><div class="form-group"><label>Podcast Name</label><input type="text" id="f-podName" placeholder="e.g. The Bengo Show"></div><div class="form-group"><label>Podcast Type</label><select id="f-podType"><option>Interview</option><option>Solo</option><option>Panel</option><option>Scripted</option><option>Full Production</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label>Podcast Name</label><input type="text" id="f-podName" placeholder="e.g. The Bengo Show"></div><div class="form-group"><label>Podcast Type</label><select id="f-podType" onchange="updatePodcastCustomRoles()"><option>Interview</option><option>Solo</option><option>Panel</option><option>Scripted</option><option>Full Production</option></select></div></div>
     <div class="form-row"><div class="form-group"><label>Client / Company</label><input type="text" id="f-podCompany"></div><div class="form-group"><label>Contact Name</label><input type="text" id="f-podContact"></div></div>
     <div class="form-row"><div class="form-group"><label>Executive Producer</label><select id="f-podEP"></select></div><div class="form-group"><label>Producer</label><select id="f-podProducer"></select></div></div>
     <div class="form-row"><div class="form-group"><label>Assistant Producer (optional)</label><select id="f-podAP"></select></div><div class="form-group"><label>Editor</label><select id="f-podEditor"></select></div></div>
     <div class="form-row"><div class="form-group"><label>Accounts</label><select id="f-podAccounts"></select></div></div>
+    <div id="podCustomRoleFields"></div>
     <div class="form-row"><div class="form-group" style="grid-column:1/-1"><label>Launch Frequency</label><select id="f-podFreq" style="max-width:220px"><option>Weekly</option><option>BiWeekly</option><option>Monthly</option></select></div></div>
-    <div class="form-row"><div class="form-group"><label>Season</label><input type="number" id="f-podSeason" value="1" min="1"></div><div class="form-group"><label>Number of Episodes</label><input type="number" id="f-podEpCount" value="6" min="1"></div></div>
+    <div class="form-row"><div class="form-group"><label>Season</label><input type="number" id="f-podSeason" value="1" min="1"></div><div class="form-group"><label>Number of Episodes <span style="font-size:11px;color:var(--text-muted);font-weight:400">(max 12)</span></label><input type="number" id="f-podEpCount" value="6" min="1" max="12"><p id="epCountNote" style="font-size:11px;color:var(--accent);margin-top:4px;line-height:1.4"></p></div></div>
+    <div class="form-row"><div class="form-group" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer;font-weight:400"><input type="checkbox" id="f-podOngoing" style="width:auto;accent-color:var(--accent)" onchange="toggleOngoingFields()"> This is an ongoing series (episodes auto-added as the podcast progresses)</label></div></div>
+    <div class="form-row hidden" id="ongoingFields"><div class="form-group"><label>Starting episode number</label><input type="number" id="f-podStartEp" value="1" min="1" placeholder="e.g. 326"></div><div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:6px"><p style="font-size:11px;color:var(--text-muted);line-height:1.5">The real episode number of the first episode being added. The next episode is created automatically when "Podcast Scheduled" is marked complete.</p></div></div>
     <div class="form-row"><div class="form-group"><label>Episode 1 Launch Date</label><input type="date" id="f-podLaunchDate"></div><div class="form-group" style="display:flex;align-items:flex-end"><p style="font-size:11px;color:var(--text-muted);line-height:1.5">All episodes and tasks auto-generated from this date.</p></div></div>
     <div class="form-group"><label>Google Drive Production Folder (optional)</label><input type="url" id="f-podGdrive" placeholder="https://drive.google.com/…"></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="savePodcastBtn" onclick="savePodcast()">Create Podcast + Episodes</button></div>
@@ -429,7 +464,7 @@
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px" id="batchSubtitle"></p>
     <div class="form-group">
       <label>How many episodes to add?</label>
-      <input type="number" id="f-batchCount" value="4" min="1" max="52">
+      <input type="number" id="f-batchCount" value="4" min="1" max="12">
     </div>
     <div id="batchPreview" style="font-size:12px;color:var(--text-muted);margin-top:4px;min-height:20px"></div>
     <p style="font-size:11px;color:var(--text-dim);margin-top:12px">Episodes will follow on from the last existing episode using the podcast's frequency. All tasks will be auto-generated.</p>
@@ -443,6 +478,7 @@
     <div class="modal-title" id="personModalTitle">Add Person</div>
     <div class="form-row"><div class="form-group"><label>Full Name</label><input type="text" id="f-personName"></div><div class="form-group"><label>Email</label><input type="email" id="f-personEmail"></div></div>
     <div class="form-row"><div class="form-group"><label>Role</label><select id="f-personRole"></select></div><div class="form-group"><label>App Access</label><select id="f-personUserRole"><option value="User">User</option><option value="Admin">Admin</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label>Password</label><input type="password" id="f-personPassword" placeholder="Leave blank to keep existing" autocomplete="new-password"></div><div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px"><label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:13px;cursor:pointer;font-weight:400"><input type="checkbox" id="f-personClearPwd" style="width:auto;accent-color:var(--accent)" onchange="if(this.checked)document.getElementById('f-personPassword').value=''"> Clear password (allow login without password)</label></div></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="savePersonBtn" onclick="savePerson()">Save</button></div>
   </div>
 
@@ -480,6 +516,30 @@
     </div>
   </div>
 
+  <div class="modal hidden" id="modalReschedulePodcast">
+    <div class="modal-title">Reschedule Entire Podcast</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px" id="f-rpPodName"></p>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">All episode launch dates and every task due date will shift by the same amount.</p>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Direction</label>
+        <select id="f-rpDir" onchange="previewReschedulePodcast()">
+          <option value="1">Delay (push forward)</option>
+          <option value="-1">Bring forward (pull back)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Days</label>
+        <input type="number" id="f-rpDays" min="1" value="7" placeholder="e.g. 14" oninput="previewReschedulePodcast()">
+      </div>
+    </div>
+    <div id="rpPreview" style="margin-top:4px;font-size:12px;color:var(--accent);min-height:18px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn" id="saveRpBtn" onclick="saveReschedulePodcast()">Reschedule All Episodes + Tasks</button>
+    </div>
+  </div>
+
   <div class="modal hidden" id="modalAdhocTask">
     <div class="modal-title">Add Ad Hoc Task</div>
     <div class="form-group"><label>Task Name</label><input type="text" id="f-adhocName" placeholder="What needs doing?"></div>
@@ -497,6 +557,34 @@
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
       <button class="btn" id="saveAdhocBtn" onclick="saveAdhocTask()">Add Task</button>
     </div>
+  </div>
+
+  <div class="modal hidden" id="modalAllTaskAdd">
+    <div class="modal-title">Add Task</div>
+    <div class="form-group"><label>Task Name</label><input type="text" id="f-atName" placeholder="What needs doing?"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Assigned To</label><select id="f-atAssigned"></select></div>
+      <div class="form-group"><label>Role (optional)</label><select id="f-atRole"></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Due Date</label><input type="date" id="f-atDue"></div>
+      <div class="form-group"><label>Status</label><select id="f-atStatus"><option>To Do</option><option>In Progress</option><option>In Review</option><option>Waiting / Blocked</option><option>Complete</option></select></div>
+    </div>
+    <div class="form-group"><label>Podcast (optional)</label><select id="f-atPodcast" onchange="onAtPodcastChange()"></select></div>
+    <div id="f-atScopeRow" style="display:none">
+      <div class="form-group">
+        <label>Add to</label>
+        <select id="f-atScope" onchange="onAtScopeChange()">
+          <option value="series">Series only (no specific episode)</option>
+          <option value="all">All episodes</option>
+          <option value="one">A specific episode</option>
+        </select>
+        <div id="f-atScopeHint" style="font-size:12px;color:var(--accent);margin-top:6px;min-height:16px"></div>
+      </div>
+    </div>
+    <div class="form-group hidden" id="f-atEpisodeRow"><label>Episode</label><select id="f-atEpisode"></select></div>
+    <div class="form-group"><label>Notes</label><textarea id="f-atNotes" rows="2" placeholder="Any extra detail..."></textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="saveAtBtn" onclick="saveAllTask()">Add Task</button></div>
   </div>
 
   <div class="modal hidden" id="modalImportTodos" style="width:600px;max-width:96vw">
@@ -730,13 +818,15 @@ const TEMPLATES={
   ]
 };
 
-let db={people:[],podcasts:[],episodes:[],tasks:[],todos:[],taskTemplates:[],companies:[]};
+let db={people:[],podcasts:[],episodes:[],tasks:[],todos:[],taskTemplates:[],companies:[],roles:[]};
 let currentView='dashboard',currentPodcastId=null,currentEpisodeId=null,editingPersonId=null,editingTaskId=null,currentUser='all';
+let filterStatuses=new Set(),filterPodcasts=new Set(),filterEpisodes=new Set(),filterRoles=new Set(),filterPersonIds=new Set();
 let ganttDayWidth=28,ganttExpanded={};
 let loggedInUser=null,isAdmin=false;
 let lastAction=null,undoTimer=null;
 let kpopData=null;
 let selectedMyTaskIds=new Set();
+let selectedEpTaskIds=new Set();
 
 function uid(){return Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,6);}
 function formatDate(d){if(!d)return'—';const dt=new Date(d);if(isNaN(dt))return'—';return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
@@ -752,25 +842,38 @@ function epTasks(epId){return db.tasks.filter(t=>t.episode_id===epId).sort((a,b)
 function epProg(epId){const t=epTasks(epId);if(!t.length)return 0;return Math.round(t.filter(t=>t.status==='Complete').length/t.length*100);}
 function epStatus(epId){const t=epTasks(epId);if(!t.length)return'To Do';if(t.every(t=>t.status==='Complete'))return'Complete';if(t.some(t=>t.status==='In Progress'||t.status==='In Review'||t.status==='Waiting / Blocked'))return'In Progress';return'To Do';}
 
+async function syncAll(){
+  const btn=document.getElementById('syncBtn');
+  btn.style.opacity='0.4';btn.style.pointerEvents='none';
+  setSync('syncing');
+  try{
+    await loadAll();
+    setSync('live');
+    navigate(currentView,currentView==='episodes'?currentPodcastId:currentView==='episode-tasks'?currentEpisodeId:currentView==='company'||currentView==='contact'?currentView:undefined);
+    notify('Synced ✓');
+  }catch(e){setSync('error');notify('Sync failed',true);}
+  finally{btn.style.opacity='';btn.style.pointerEvents='';}
+}
+
 function setSync(s){const el=document.getElementById('syncIndicator');if(s==='syncing'){el.textContent='↻ Saving…';el.className='sync-indicator syncing';}else if(s==='error'){el.textContent='✕ Error';el.className='sync-indicator error';}else{el.textContent='● Live';el.className='sync-indicator';}}
 function notify(msg,err){const el=document.createElement('div');el.className='notify'+(err?' err':'');el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);}
 
 async function loadAll(){
-  const[people,podcasts,episodes,tasks,todos,taskTemplates,companies]=await Promise.all([
+  const[people,podcasts,episodes,tasks,todos,taskTemplates,companies,roles]=await Promise.all([
     api.get('people','order=name'),api.get('podcasts','order=created_at'),api.get('episodes','order=number'),
     api.get('tasks','order=task_order'),api.get('todos','order=due_date'),
     api.get('task_templates','order=task_order').catch(()=>null),
-    api.get('companies','order=name').catch(()=>null)
+    api.get('companies','order=name').catch(()=>null),
+    api.get('roles','order=name').catch(()=>null)
   ]);
   db.people=people||[];db.podcasts=podcasts||[];db.episodes=episodes||[];db.tasks=tasks||[];db.todos=todos||[];
-  db.taskTemplates=taskTemplates||[];db.companies=companies||[];
+  db.taskTemplates=taskTemplates||[];db.companies=companies||[];db.roles=roles||[];
 }
 
 const BUILT_IN_TASK_ROLES=['Executive Producer','Producer','Editor','Marketer','Accounts'];
 const BUILT_IN_PERSON_ROLES=['Executive Producer','Producer','Editor','Marketer','Accounts','Admin'];
 
-function getCustomRoles(){return JSON.parse(localStorage.getItem('bengo_custom_roles')||'[]');}
-function saveCustomRoles(roles){localStorage.setItem('bengo_custom_roles',JSON.stringify(roles));}
+function getCustomRoles(){return db.roles.map(r=>r.name);}
 function getTaskRoles(){return[...BUILT_IN_TASK_ROLES,...getCustomRoles().filter(r=>!BUILT_IN_TASK_ROLES.includes(r))];}
 function getPersonRoles(){return[...BUILT_IN_PERSON_ROLES,...getCustomRoles().filter(r=>!BUILT_IN_PERSON_ROLES.includes(r))];}
 function roleOptions(roles,selected){return roles.map(r=>`<option${r===selected?' selected':''}>${r}</option>`).join('');}
@@ -794,6 +897,14 @@ function savePodcastTypeData(name,data){
   const stored=JSON.parse(localStorage.getItem('bengo_podcast_types')||'{}');
   stored[name]={...stored[name],...data};
   localStorage.setItem('bengo_podcast_types',JSON.stringify(stored));
+}
+
+const STANDARD_ROLES=new Set(['Executive Producer','Producer','Assistant Producer','Editor','Accounts']);
+
+function buildRoleMap(pod){
+  const base={'Executive Producer':pod.ep||null,'Producer':pod.producer||null,'Assistant Producer':pod.ap||null,'Editor':pod.editor||null,'Accounts':pod.accounts||null};
+  const custom=pod.custom_role_assignments||{};
+  return{...base,...custom};
 }
 
 function getTemplatesForType(type){
@@ -823,15 +934,18 @@ async function writeTemplatesForType(type,tasks){
 }
 
 function navigate(view,id){
+  // Redirect removed views to All Tasks
+  if(view==='mytasks'){view='tasks';}
+  if(view==='todos'){filterPodcasts=new Set(['__none__']);view='tasks';}
   // Restrict non-admins from admin-only views
-  if(!isAdmin&&['podcasts','tasks','gantt','settings','companies','contacts'].includes(view)){view='mytasks';}
+  if(!isAdmin&&['podcasts','gantt','settings','companies','contacts'].includes(view)){view='tasks';}
   currentView=view;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const nk=(view==='episodes'||view==='episode-tasks')?'podcasts':view==='company'?'companies':view==='contact'?'contacts':view;
   document.getElementById('nav-'+nk)?.classList.add('active');
   document.querySelectorAll('[id^="view-"]').forEach(v=>v.classList.add('hidden'));
   document.getElementById('view-'+view)?.classList.remove('hidden');
-  const titles={dashboard:'Dashboard',companies:'Companies',company:'Company',contacts:'Contacts',contact:'Contact',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',mytasks:'My Tasks',gantt:'Gantt',todos:'To-Do',settings:'Settings'};
+  const titles={dashboard:'Dashboard',companies:'Companies',company:'Company',contacts:'Contacts',contact:'Contact',podcasts:'Podcasts',episodes:'Episodes','episode-tasks':'Episode Tasks',tasks:'All Tasks',gantt:'Gantt',settings:'Settings'};
   document.getElementById('pageTitle').textContent=titles[view]||view;
   document.getElementById('topbarActions').innerHTML='';
   if(view==='companies'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewCompanyModal()">+ Add Company</button>';renderCompanies();}
@@ -840,12 +954,10 @@ function navigate(view,id){
   else if(view==='contact'){if(id)renderContactDetail(id);}
   else if(view==='podcasts'){document.getElementById('topbarActions').innerHTML='<button class="btn" onclick="openNewPodcastModal()">+ New Podcast</button>';renderPodcasts();}
   else if(view==='dashboard'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" id="sendRemindersBtn" onclick="sendUrgentReminders()">⏰ Send Reminders</button>';renderDashboard();}
-  else if(view==='episodes'){if(id)currentPodcastId=id;renderEpisodes();}
+  else if(view==='episodes'){if(id)currentPodcastId=id;renderEpisodes();document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" onclick="openReschedulePodcastModal(currentPodcastId)">📅 Reschedule Podcast</button>';}
   else if(view==='episode-tasks'){if(id)currentEpisodeId=id;renderEpisodeTasks();document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" id="notifyEpisodeBtn" onclick="notifyEpisodeTeam()" style="margin-right:8px">📧 Notify Team</button><button class="btn" onclick="openAdhocTaskModal()">+ Ad Hoc Task</button>';}
-  else if(view==='tasks'){populateTaskFilters();renderAllTasks();}
-  else if(view==='mytasks')renderMyTasks();
+  else if(view==='tasks'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" onclick="openImportTodosModal()">↑ Import</button>';populateTaskFilters();renderAllTasks();}
   else if(view==='gantt'){populateGanttFilter();renderGantt();}
-  else if(view==='todos'){document.getElementById('topbarActions').innerHTML='<button class="btn btn-ghost" onclick="openImportTodosModal()" style="margin-right:8px">↑ Import</button><button class="btn" onclick="openNewTodoModal()">+ New To-Do</button>';populateTodoFilters();renderTodos();}
   else if(view==='settings'){document.getElementById('topbarActions').innerHTML='';renderSettings();}
 }
 
@@ -917,7 +1029,7 @@ function renderDashboard(){
     else if(urgentCount>0){healthColor='#ee9940';healthLabel=urgentCount+' due soon';}
     else{healthColor='var(--complete-text)';healthLabel='On track';}
     const barW=Math.min(100,total*8); // rough capacity bar
-    return`<tr class="clickable" onclick="currentUser='${p.id}';document.getElementById('currentUser').value='${p.id}';navigate('mytasks')">
+    return`<tr class="clickable" onclick="filterPersonIds=new Set(['${p.id}']);navigate('tasks')">
       <td><span class="assignee-chip"><span class="avatar">${ini(p.name)}</span>${p.name}</span></td>
       <td><span style="font-size:11px;color:var(--text-muted)">${p.role}</span></td>
       <td>
@@ -979,9 +1091,9 @@ function renderPodcasts(){
     const color=pct===100?'var(--complete-text)':pct>50?'var(--accent)':'var(--accent2)';
     const folderBtn=p.google_folder_url?`<a href="${p.google_folder_url}" target="_blank" onclick="event.stopPropagation()" title="Open Google Drive folder" style="color:var(--accent);font-size:13px;text-decoration:none;margin-left:6px">📁</a>`:'';
     return`<div class="card" onclick="navigate('episodes','${p.id}')">
-      <div class="card-actions"><div class="icon-btn" onclick="event.stopPropagation();openEditPodcastModal('${p.id}')">✏️</div><div class="icon-btn" onclick="event.stopPropagation();openBatchEpisodesModal('${p.id}')" title="Add batch of episodes">➕</div><div class="icon-btn danger" onclick="event.stopPropagation();deletePodcast('${p.id}')">🗑</div></div>
+      <div class="card-actions"><div class="icon-btn" onclick="event.stopPropagation();openEditPodcastModal('${p.id}')">✏️</div><div class="icon-btn" onclick="event.stopPropagation();openBatchEpisodesModal('${p.id}')" title="Add batch of episodes">➕</div><div class="icon-btn" onclick="event.stopPropagation();openReschedulePodcastModal('${p.id}')" title="Reschedule all episodes">📅</div><div class="icon-btn danger" onclick="event.stopPropagation();deletePodcast('${p.id}')">🗑</div></div>
       <div class="card-label">${p.company||''} ${p.contact?'· '+p.contact:''}${folderBtn}</div>
-      <div class="card-title">${p.name}</div>
+      <div class="card-title">${p.name}${p.is_ongoing?` <span title="Ongoing series — next episode: Ep ${p.next_episode_number||'?'}" style="font-size:12px;font-weight:400;color:var(--accent)">🔄 Ep ${p.next_episode_number||'?'} next</span>`:''}</div>
       <div class="card-meta">
         <span class="card-badge badge-${(p.type||'interview').toLowerCase()}">${p.type}</span><br>
         ${ec} episode${ec!==1?'s':''} · Season ${p.season} · ${p.frequency}<br>
@@ -1066,9 +1178,12 @@ function renderEpisodeTasks(){
   document.getElementById('epTaskTitle').textContent=`${ep.default_title||'E'+ep.number}${ep.title?': '+ep.title:''}`;
   document.getElementById('pageTitle').textContent=`${ep.default_title||'E'+ep.number} Tasks`;
   const tasks=epTasks(currentEpisodeId),today=new Date();
+  selectedEpTaskIds=new Set();
+  const epBar=document.getElementById('epBulkBar');if(epBar)epBar.classList.add('hidden');
+  const selAllCb=document.getElementById('selectAllEpTasks');if(selAllCb)selAllCb.checked=false;
   document.getElementById('episodeTasksBody').innerHTML=tasks.map(t=>{
     const person=t.assigned_to?pById(t.assigned_to):null,od=t.due_date&&new Date(t.due_date)<today&&t.status!=='Complete';
-    return`<tr><td>${t.name}</td><td><span class="tag">${t.role}</span></td><td>${person?`<span class="assignee-chip"><span class="avatar">${ini(person.name)}</span>${person.name}</span>`:'<span style="color:var(--text-muted)">—</span>'}</td><td class="${od?'date-overdue':''}">${formatDate(t.due_date)}</td><td><button class="status-pill ${scls(t.status)}" onclick="cycleTask('${t.id}')">${t.status}</button></td><td><div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--text-muted);flex:1">${t.notes||''}</span><div class="icon-btn" onclick="openEditTaskModal('${t.id}')">✏️</div></div></td></tr>`;
+    return`<tr><td onclick="event.stopPropagation()"><input type="checkbox" class="ep-task-cb" data-id="${t.id}" onchange="onEpTaskCheckbox()" style="accent-color:var(--accent)"></td><td>${t.name}</td><td><span class="tag">${t.role}</span></td><td>${person?`<span class="assignee-chip"><span class="avatar">${ini(person.name)}</span>${person.name}</span>`:'<span style="color:var(--text-muted)">—</span>'}</td><td class="${od?'date-overdue':''}">${formatDate(t.due_date)}</td><td><button class="status-pill ${scls(t.status)}" onclick="cycleTask('${t.id}')">${t.status}</button></td><td><div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--text-muted);flex:1">${t.notes||''}</span><div class="icon-btn" onclick="openEditTaskModal('${t.id}')">✏️</div></div></td></tr>`;
   }).join('');
 }
 
@@ -1082,6 +1197,7 @@ async function cycleTask(id){
     await api.patch('tasks',id,{status:t.status});setSync('live');
     saveUndo(async()=>{t.status=prev;await api.patch('tasks',id,{status:prev});});
     renderEpisodeTasks();
+    if(t.status==='Complete'&&t.name==='Podcast Scheduled')await checkAndQueueNextEpisode(t.episode_id);
   }catch(e){setSync('error');notify('Save failed',true);}
 }
 
@@ -1095,6 +1211,7 @@ async function qCycle(id){
     await api.patch('tasks',id,{status:t.status});setSync('live');
     saveUndo(async()=>{t.status=prev;await api.patch('tasks',id,{status:prev});});
     if(currentView==='dashboard')renderDashboard();else if(currentView==='tasks')renderAllTasks();else if(currentView==='mytasks')renderMyTasks();
+    if(t.status==='Complete'&&t.name==='Podcast Scheduled')await checkAndQueueNextEpisode(t.episode_id);
   }catch(e){setSync('error');notify('Save failed',true);}
 }
 
@@ -1121,9 +1238,111 @@ function progressRing(pct,size,stroke,color){
   </svg>`;
 }
 
+function clearFilter(type){
+  if(type==='person') filterPersonIds=new Set();
+  else if(type==='status') filterStatuses=new Set();
+  else if(type==='podcast') filterPodcasts=new Set();
+  else if(type==='episode') filterEpisodes=new Set();
+  else if(type==='role') filterRoles=new Set();
+  const dropId='msDrop'+type.charAt(0).toUpperCase()+type.slice(1);
+  document.querySelectorAll('#'+dropId+' input[type=checkbox]').forEach(c=>c.checked=false);
+  updateMsLabel(type);
+  updateClearAllBtn();
+  renderAllTasks();
+}
+
+function clearAllFilters(){
+  filterStatuses=new Set();filterPodcasts=new Set();filterEpisodes=new Set();filterRoles=new Set();
+  filterPersonIds=isAdmin?new Set():new Set([loggedInUser.id]);
+  document.querySelectorAll('.ms-drop input[type=checkbox]').forEach(c=>c.checked=false);
+  if(!isAdmin&&loggedInUser){document.querySelectorAll('#msDropPerson input[type=checkbox]').forEach(c=>{if(c.value===String(loggedInUser.id))c.checked=true;});}
+  ['person','status','podcast','episode','role'].forEach(t=>updateMsLabel(t));
+  updateClearAllBtn();
+  renderAllTasks();
+}
+
+function updateClearAllBtn(){
+  const anyActive=(isAdmin&&filterPersonIds.size>0)||filterStatuses.size>0||filterPodcasts.size>0||filterEpisodes.size>0||filterRoles.size>0;
+  const btn=document.getElementById('clearAllFiltersBtn');
+  if(btn)btn.style.display=anyActive?'':'none';
+}
+
+function toggleMsFilter(dropId){
+  const drop=document.getElementById(dropId);
+  const wasOpen=drop.classList.contains('open');
+  document.querySelectorAll('.ms-drop').forEach(d=>d.classList.remove('open'));
+  if(!wasOpen)drop.classList.add('open');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.ms-wrap'))document.querySelectorAll('.ms-drop').forEach(d=>d.classList.remove('open'));});
+
+function getMsChecked(dropId){
+  return new Set([...document.querySelectorAll('#'+dropId+' input[type=checkbox]:checked')].map(c=>c.value));
+}
+
+function onMsChange(type){
+  if(type==='status')filterStatuses=getMsChecked('msDropStatus');
+  if(type==='podcast'){filterPodcasts=getMsChecked('msDropPodcast');populateEpisodeDropdown();}
+  if(type==='episode')filterEpisodes=getMsChecked('msDropEpisode');
+  if(type==='role')filterRoles=getMsChecked('msDropRole');
+  if(type==='person')filterPersonIds=getMsChecked('msDropPerson');
+  updateMsLabel(type);
+  document.getElementById('msBtn'+type.charAt(0).toUpperCase()+type.slice(1)).classList.toggle('has-filter',getMsChecked('msDrop'+type.charAt(0).toUpperCase()+type.slice(1)).size>0);
+  updateClearAllBtn();
+  renderAllTasks();
+}
+
+function updateMsLabel(type){
+  const defaults={status:'Open tasks',podcast:'All Podcasts',episode:'All Episodes',role:'All Roles',person:'All People'};
+  const map={status:filterStatuses,podcast:filterPodcasts,episode:filterEpisodes,role:filterRoles,person:filterPersonIds};
+  const el=document.getElementById('msLabel'+type.charAt(0).toUpperCase()+type.slice(1));
+  if(!el)return;
+  const s=map[type];
+  if(s.size===0){el.textContent=defaults[type];}
+  else if(s.size===1){
+    if(type==='person'){const p=pById([...s][0]);el.textContent=p?p.name:'1 person';}
+    else if(type==='podcast'){const v=[...s][0];if(v==='__none__'){el.textContent='Standalone';}else{const p=podById(v);el.textContent=p?p.name:'1 selected';}}
+    else if(type==='episode'){const e=epById([...s][0]);el.textContent=e?e.default_title||'E'+e.number:'1 selected';}
+    else{el.textContent=[...s][0];}
+  }else{el.textContent=s.size+' selected';}
+  const btn=document.getElementById('msBtn'+type.charAt(0).toUpperCase()+type.slice(1));
+  if(btn)btn.classList.toggle('has-filter',s.size>0);
+}
+
+function populateEpisodeDropdown(){
+  const clearLink=`<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('episode')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Clear</button></div>`;
+  const podIds=filterPodcasts.size>0?new Set([...filterPodcasts].filter(id=>id!=='__none__')):null;
+  const eps=(podIds&&podIds.size>0?db.episodes.filter(e=>podIds.has(e.podcast_id)):db.episodes)
+    .slice().sort((a,b)=>{const pa=podById(a.podcast_id),pb=podById(b.podcast_id);const nc=(pa?.name||'').localeCompare(pb?.name||'');return nc||a.number-b.number;});
+  const drop=document.getElementById('msDropEpisode');if(!drop)return;
+  drop.innerHTML=clearLink+eps.map(e=>{const pod=podById(e.podcast_id);return`<label><input type="checkbox" value="${e.id}"${filterEpisodes.has(e.id)?' checked':''} onchange="onMsChange('episode')"> ${pod?pod.name+' — ':''}${e.default_title||'E'+e.number}${e.title?' '+e.title:''}</label>`;}).join('');
+  updateMsLabel('episode');
+}
+
 function populateTaskFilters(){
-  document.getElementById('filterPodcast').innerHTML='<option value="">All Podcasts</option>'+db.podcasts.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  populateRoleFilter();
+  const clearLink=(type)=>`<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('${type}')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Clear</button></div>`;
+  // Podcast dropdown
+  document.getElementById('msDropPodcast').innerHTML=
+    clearLink('podcast')+
+    `<label><input type="checkbox" value="__none__"${filterPodcasts.has('__none__')?' checked':''} onchange="onMsChange('podcast')"> — Standalone —</label>`+
+    (db.podcasts.length?`<hr style="margin:4px 0;border:none;border-top:1px solid var(--border)">`:'')+
+    db.podcasts.map(p=>`<label><input type="checkbox" value="${p.id}"${filterPodcasts.has(p.id)?' checked':''} onchange="onMsChange('podcast')"> ${p.name||p.company||'Untitled'}</label>`).join('');
+  // Role dropdown
+  document.getElementById('msDropRole').innerHTML=
+    clearLink('role')+
+    getTaskRoles().map(r=>`<label><input type="checkbox" value="${r}"${filterRoles.has(r)?' checked':''} onchange="onMsChange('role')"> ${r}</label>`).join('');
+  // Person dropdown
+  document.getElementById('msDropPerson').innerHTML=
+    `<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('person')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Show everyone</button></div>`+
+    db.people.filter(p=>p.active!==false).map(p=>
+      `<label><input type="checkbox" value="${p.id}"${filterPersonIds.has(p.id)?' checked':''} onchange="onMsChange('person')"> ${p.name}</label>`
+    ).join('');
+  // Episode dropdown
+  populateEpisodeDropdown();
+  updateMsLabel('podcast');
+  updateMsLabel('role');
+  updateMsLabel('person');
+  updateMsLabel('status');
+  updateClearAllBtn();
 }
 
 let taskViewMode = 'table';
@@ -1148,19 +1367,25 @@ function setTodoView(mode){
 }
 
 function getFilteredTasks(){
-  const sf=document.getElementById('filterStatus').value,pf=document.getElementById('filterPodcast').value,rf=document.getElementById('filterRole').value;
   const q=(document.getElementById('searchTasks')?.value||'').toLowerCase().trim();
   let tasks=[...db.tasks];
-  if(!sf) tasks=tasks.filter(t=>t.status!=='Complete');
-  if(sf) tasks=tasks.filter(t=>t.status===sf);
-  if(rf) tasks=tasks.filter(t=>t.role===rf);
-  if(pf){const eids=db.episodes.filter(e=>e.podcast_id===pf).map(e=>e.id);tasks=tasks.filter(t=>eids.includes(t.episode_id));}
+  if(filterPersonIds.size>0) tasks=tasks.filter(t=>filterPersonIds.has(t.assigned_to));
+  if(filterStatuses.size===0) tasks=tasks.filter(t=>t.status!=='Complete');
+  else tasks=tasks.filter(t=>filterStatuses.has(t.status));
+  if(filterRoles.size>0) tasks=tasks.filter(t=>filterRoles.has(t.role));
+  if(filterPodcasts.size>0){
+    const podIds=new Set([...filterPodcasts].filter(id=>id!=='__none__'));
+    if(podIds.size>0){const eids=db.episodes.filter(e=>podIds.has(e.podcast_id)).map(e=>e.id);tasks=tasks.filter(t=>eids.includes(t.episode_id));}
+    else tasks=[];
+  }
+  if(filterEpisodes.size>0) tasks=tasks.filter(t=>filterEpisodes.has(t.episode_id));
   if(q){tasks=tasks.filter(t=>{const ep=epById(t.episode_id),pod=ep?podById(ep.podcast_id):null,person=t.assigned_to?pById(t.assigned_to):null;return[t.name,t.notes,ep?.title,ep?.default_title,pod?.name,pod?.company,person?.name].some(v=>(v||'').toLowerCase().includes(q));});}
-  if(!rf){
+  if(filterRoles.size===0){
     let todos=[...db.todos];
-    if(!sf) todos=todos.filter(t=>t.status!=='Complete');
-    if(sf) todos=todos.filter(t=>t.status===sf);
-    if(pf) todos=todos.filter(t=>t.podcast_id===pf);
+    if(filterPersonIds.size>0) todos=todos.filter(t=>filterPersonIds.has(t.assigned_to));
+    if(filterStatuses.size===0) todos=todos.filter(t=>t.status!=='Complete');
+    else todos=todos.filter(t=>filterStatuses.has(t.status));
+    if(filterPodcasts.size>0) todos=todos.filter(t=>!t.podcast_id?filterPodcasts.has('__none__'):filterPodcasts.has(t.podcast_id));
     if(q){todos=todos.filter(t=>{const pod=t.podcast_id?podById(t.podcast_id):null,person=t.assigned_to?pById(t.assigned_to):null;return[t.name,t.notes,pod?.name,person?.name].some(v=>(v||'').toLowerCase().includes(q));});}
     todos.forEach(t=>t._isTodo=true);
     tasks=[...tasks,...todos];
@@ -1413,7 +1638,7 @@ function renderMyTasks(){
     <span id="myBulkCount" style="font-weight:600"></span>
     <select id="myBulkStatus"><option value="">— Status —</option>${STATUSES.map(s=>`<option>${s}</option>`).join('')}</select>
     ${isAdmin?`<select id="myBulkAssignee"><option value="">— Reassign —</option>${peopleOpts}</select>`:''}
-    <input type="number" id="myBulkDays" placeholder="Shift days (±)" style="width:120px">
+    <span style="font-size:12px;color:var(--text-muted)">Set due date</span><input type="date" id="myBulkDate" style="width:140px;padding:6px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;color-scheme:dark">
     <button class="btn btn-primary btn-sm" onclick="applyMyBulkUpdate()">Apply</button>
     <button class="btn btn-sm" onclick="clearMyBulkSelection()">Clear</button>
   </div>`;
@@ -1474,7 +1699,30 @@ function renderMyTasks(){
 }
 
 function renderPeople(){
-  document.getElementById('peopleGrid').innerHTML=db.people.map(p=>`<div class="person-card"><div class="person-actions"><div class="icon-btn" onclick="openEditPersonModal('${p.id}')">✏️</div><div class="icon-btn danger" onclick="deletePerson('${p.id}')">🗑</div></div><div class="person-avatar">${ini(p.name)}</div><div><div class="person-name">${p.name} ${p.user_role==='Admin'?'<span class="admin-badge">Admin</span>':''}</div><div class="person-role">${p.role}</div><div class="person-email">${p.email||''}</div></div></div>`).join('');
+  document.getElementById('peopleGrid').innerHTML=db.people.map(p=>`<div class="person-card"><div class="person-actions"><div class="icon-btn" title="Send login instructions" onclick="sendLoginInstructions('${p.id}')">📧</div><div class="icon-btn" onclick="openEditPersonModal('${p.id}')">✏️</div><div class="icon-btn danger" onclick="deletePerson('${p.id}')">🗑</div></div><div class="person-avatar">${ini(p.name)}</div><div><div class="person-name">${p.name} ${p.user_role==='Admin'?'<span class="admin-badge">Admin</span>':''} ${p.password?'<span title="Password set" style="font-size:13px">🔒</span>':'<span title="No password — open login" style="font-size:13px;opacity:0.35">🔓</span>'}</div><div class="person-role">${p.role}</div><div class="person-email">${p.email||''}</div></div></div>`).join('');
+}
+
+async function sendLoginInstructions(personId){
+  const p=pById(personId);if(!p||!p.email){notify('No email address on file for this person',true);return;}
+  const appUrl=window.location.origin+window.location.pathname;
+  const pwdNote=p.password
+    ?`<p>You have a password set — you'll need to enter it when you click your name.</p>`
+    :`<p>No password has been set on your account yet, so just click your name to get in. If you'd like a password added, ask an admin.</p>`;
+  const html=`
+    <p>Hi ${p.name},</p>
+    <p>You've been added to the Bengo workflow app — this is where the team tracks podcasts, episodes, and tasks.</p>
+    <p><strong>To log in:</strong></p>
+    <ol>
+      <li>Go to: <a href="${appUrl}">${appUrl}</a></li>
+      <li>Click your name on the login screen</li>
+      <li>You'll land on your dashboard showing your tasks</li>
+    </ol>
+    ${pwdNote}
+    <p>If you have any trouble getting in, just drop a message to the team.</p>
+    <p>— The Bengo team</p>`;
+  const ok=await sendEmail(p.email,'Welcome to Bengo Workflow — here\'s how to log in',html);
+  if(ok) notify(`Login instructions sent to ${p.email}`);
+  else notify('Email failed to send — check the email address is correct',true);
 }
 
 let _settingsTab='users';
@@ -1510,35 +1758,40 @@ function renderSettingsRoles(){
   document.getElementById('settingsContent').innerHTML=html;
 }
 
-function addCustomRole(){
+async function addCustomRole(){
   const name=document.getElementById('f-newRole').value.trim();
   if(!name){notify('Enter a role name',true);return;}
   const all=getPersonRoles();
   if(all.map(r=>r.toLowerCase()).includes(name.toLowerCase())){notify('That role already exists',true);return;}
-  const custom=getCustomRoles();
-  custom.push(name);
-  saveCustomRoles(custom);
-  notify(`Role "${name}" added`);
-  renderSettingsRoles();
-  // Refresh any open dropdowns that list roles
-  const fr=document.getElementById('filterRole');
-  if(fr)populateRoleFilter();
+  setSync('syncing');
+  try{
+    await api.post('roles',{name});
+    db.roles.push({name});
+    setSync('live');
+    notify(`Role "${name}" added`);
+    renderSettingsRoles();
+    if(document.getElementById('msDropRole'))populateRoleFilter();
+  }catch(e){setSync('error');notify('Could not save role: '+e.message,true);}
 }
 
-function deleteCustomRole(encoded){
+async function deleteCustomRole(encoded){
   const name=decodeURIComponent(encoded);
   const peopleCount=db.people.filter(p=>p.role===name).length;
   if(peopleCount>0){notify(`Can't delete — ${peopleCount} team member${peopleCount!==1?'s':''} use this role`,true);return;}
   if(!confirm(`Delete role "${name}"?`))return;
-  saveCustomRoles(getCustomRoles().filter(r=>r!==name));
-  notify(`Role "${name}" deleted`);
-  renderSettingsRoles();
+  setSync('syncing');
+  try{
+    await api.del('roles',`name=eq.${encodeURIComponent(name)}`);
+    db.roles=db.roles.filter(r=>r.name!==name);
+    setSync('live');
+    notify(`Role "${name}" deleted`);
+    renderSettingsRoles();
+  }catch(e){setSync('error');notify('Could not delete role: '+e.message,true);}
 }
 
 function populateRoleFilter(){
-  const el=document.getElementById('filterRole');if(!el)return;
-  const current=el.value;
-  el.innerHTML='<option value="">All Roles</option>'+getTaskRoles().map(r=>`<option${r===current?' selected':''}>${r}</option>`).join('');
+  const el=document.getElementById('msDropRole');if(!el)return;
+  el.innerHTML=getTaskRoles().map(r=>`<label><input type="checkbox" value="${r}"${filterRoles.has(r)?' checked':''} onchange="onMsChange('role')"> ${r}</label>`).join('');
 }
 
 let _settingsTmplType='Interview';
@@ -1971,8 +2224,86 @@ function closeModalOnOverlay(e){if(e.target.id==='modalOverlay')closeModal();}
 
 let editingPodcastId = null;
 
+function toggleOngoingFields(){
+  const checked=document.getElementById('f-podOngoing').checked;
+  document.getElementById('ongoingFields').classList.toggle('hidden',!checked);
+  const epCountField=document.getElementById('f-podEpCount');
+  const epCountNote=document.getElementById('epCountNote');
+  if(checked){
+    epCountField.value=12;epCountField.disabled=true;
+    epCountNote.textContent='12 episodes will be created to start. The next episode is added automatically each time "Podcast Scheduled" is marked complete.';
+  } else {
+    epCountField.disabled=false;
+    epCountNote.textContent='';
+  }
+}
+
+async function checkAndQueueNextEpisode(episodeId){
+  const ep=epById(episodeId);if(!ep)return;
+  const pod=podById(ep.podcast_id);if(!pod||!pod.is_ongoing)return;
+  const activeEps=db.episodes.filter(e=>e.podcast_id===pod.id&&epStatus(e.id)!=='Complete');
+  if(activeEps.length>=12)return;
+  const allEps=db.episodes.filter(e=>e.podcast_id===pod.id).sort((a,b)=>a.number-b.number);
+  const lastEp=allEps[allEps.length-1];
+  if(!lastEp||!lastEp.launch_date)return;
+  const interval=freqDays(pod.frequency);
+  const nextLaunch=addDays(lastEp.launch_date,interval);
+  const nextNum=pod.next_episode_number||(lastEp.number+1);
+  const sn=String(pod.season).padStart(2,'0');
+  setSync('syncing');
+  try{
+    const newEp={id:uid(),podcast_id:pod.id,number:nextNum,title:'',default_title:`S${sn}E${nextNum}`,launch_date:nextLaunch,status:'To Do'};
+    await api.post('episodes',newEp);db.episodes.push(newEp);
+    const tmpls=getTemplatesForType(pod.type);
+    const activeTmpls=tmpls.filter(t=>!t.series);
+    const rm=buildRoleMap(pod);
+    for(const tmpl of activeTmpls){
+      const task={id:uid(),episode_id:newEp.id,name:tmpl.name,role:tmpl.role,assigned_to:rm[tmpl.role]||null,status:'To Do',due_date:tmpl.days>0?addDays(nextLaunch,-tmpl.days):nextLaunch,start_date:null,task_order:tmpl.order,notes:''};
+      await api.post('tasks',task);db.tasks.push(task);
+    }
+    const newNextNum=nextNum+1;
+    await api.patch('podcasts',pod.id,{next_episode_number:newNextNum});
+    pod.next_episode_number=newNextNum;
+    setSync('live');
+    notify(`Episode ${nextNum} added to pipeline automatically`);
+    if(currentView==='episodes'&&currentPodcastId===pod.id)renderEpisodes();
+    else if(currentView==='podcasts')renderPodcasts();
+  }catch(e){setSync('error');notify('Could not queue next episode: '+e.message,true);}
+}
+
 function populatePodcastTypeDropdown(selectedType){
   document.getElementById('f-podType').innerHTML=getPodcastTypes().map(t=>`<option${t.name===selectedType?' selected':''}>${t.name}</option>`).join('');
+}
+
+function getCustomRoleAssignments(){
+  const assignments={};
+  document.querySelectorAll('[id^="f-podCustom-"]').forEach(sel=>{
+    const role=decodeURIComponent(sel.id.replace('f-podCustom-',''));
+    if(sel.value)assignments[role]=sel.value;
+  });
+  return Object.keys(assignments).length?assignments:null;
+}
+
+function updatePodcastCustomRoles(existingAssignments){
+  const type=document.getElementById('f-podType').value;
+  const tmpls=getTemplatesForType(type);
+  const customRoles=[...new Set(tmpls.map(t=>t.role).filter(r=>!STANDARD_ROLES.has(r)))];
+  const container=document.getElementById('podCustomRoleFields');
+  if(!customRoles.length){container.innerHTML='';return;}
+  const peopleOpts='<option value="">— Select —</option>'+db.people.map(p=>`<option value="${p.id}">${p.name} (${p.role})</option>`).join('');
+  const assignments=existingAssignments||{};
+  let html='';
+  for(let i=0;i<customRoles.length;i+=2){
+    html+='<div class="form-row">';
+    html+=`<div class="form-group"><label>${customRoles[i]}</label><select id="f-podCustom-${encodeURIComponent(customRoles[i])}">${peopleOpts}</select></div>`;
+    if(customRoles[i+1])html+=`<div class="form-group"><label>${customRoles[i+1]}</label><select id="f-podCustom-${encodeURIComponent(customRoles[i+1])}">${peopleOpts}</select></div>`;
+    html+='</div>';
+  }
+  container.innerHTML=html;
+  customRoles.forEach(role=>{
+    const sel=document.getElementById('f-podCustom-'+encodeURIComponent(role));
+    if(sel&&assignments[role])sel.value=assignments[role];
+  });
 }
 
 function openNewPodcastModal(){
@@ -1982,8 +2313,14 @@ function openNewPodcastModal(){
   document.getElementById('f-podSeason').value=1;document.getElementById('f-podEpCount').value=6;document.getElementById('f-podLaunchDate').value='';
   document.getElementById('f-podLaunchDate').closest('.form-row').style.display='';
   document.getElementById('savePodcastBtn').textContent='Create Podcast + Episodes';
+  document.getElementById('f-podOngoing').checked=false;
+  document.getElementById('f-podStartEp').value=1;
+  document.getElementById('ongoingFields').classList.add('hidden');
+  document.getElementById('f-podEpCount').disabled=false;
+  document.getElementById('epCountNote').textContent='';
   populatePodcastTypeDropdown('Interview');
   ['f-podEP','f-podProducer','f-podAP','f-podEditor','f-podAccounts'].forEach(function(fid){var sel=document.getElementById(fid);if(!sel)return;var emptyLabel=fid==='f-podAP'?'— None —':'— Select —';sel.innerHTML='<option value="">'+emptyLabel+'</option>'+db.people.map(p=>'<option value="'+p.id+'">'+p.name+' ('+p.role+')</option>').join('');});
+  updatePodcastCustomRoles();
   openModal('modalPodcast');
 }
 
@@ -2010,6 +2347,10 @@ function openEditPodcastModal(id){
     var sel=document.getElementById(selId);if(!sel)return;
     sel.innerHTML='<option value="">'+emptyLabel+'</option>'+db.people.map(function(per){return '<option value="'+per.id+'"'+(p[key]===per.id?' selected':'')+'>'+per.name+' ('+per.role+')</option>';}).join('');
   });
+  document.getElementById('f-podOngoing').checked=!!p.is_ongoing;
+  document.getElementById('f-podStartEp').value=p.start_episode_number||1;
+  document.getElementById('ongoingFields').classList.toggle('hidden',!p.is_ongoing);
+  updatePodcastCustomRoles(p.custom_role_assignments||{});
   openModal('modalPodcast');
 }
 
@@ -2023,7 +2364,7 @@ async function savePodcast(){
     try{
       const oldPod = podById(editingPodcastId);
       const newGdrive=document.getElementById('f-podGdrive').value.trim()||null;
-      const data={name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:newGdrive};
+      const data={name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:newGdrive,custom_role_assignments:getCustomRoleAssignments(),is_ongoing:document.getElementById('f-podOngoing').checked,start_episode_number:parseInt(document.getElementById('f-podStartEp').value)||1};
 
       // Detect which roles changed
       const roleMap = {'Executive Producer':'ep','Producer':'producer','Assistant Producer':'ap','Editor':'editor','Accounts':'accounts'};
@@ -2072,18 +2413,21 @@ async function savePodcast(){
   const btn=document.getElementById('savePodcastBtn');btn.disabled=true;btn.textContent='Creating…';setSync('syncing');
   try{
     const gdriveUrl=document.getElementById('f-podGdrive').value.trim()||null;
-    const pod={id:uid(),name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:parseInt(document.getElementById('f-podEpCount').value)||6,frequency:document.getElementById('f-podFreq').value,google_folder_url:gdriveUrl};
+    const isOngoing=document.getElementById('f-podOngoing').checked;
+    const startEpNum=parseInt(document.getElementById('f-podStartEp').value)||1;
+    const epCount=Math.min(parseInt(document.getElementById('f-podEpCount').value)||6,12);
+    const pod={id:uid(),name,type:document.getElementById('f-podType').value,company:document.getElementById('f-podCompany').value.trim(),contact:document.getElementById('f-podContact').value.trim(),ep:document.getElementById('f-podEP').value||null,producer:document.getElementById('f-podProducer').value||null,ap:document.getElementById('f-podAP').value||null,editor:document.getElementById('f-podEditor').value||null,accounts:document.getElementById('f-podAccounts').value||null,season:document.getElementById('f-podSeason').value,episode_count:epCount,frequency:document.getElementById('f-podFreq').value,google_folder_url:gdriveUrl,custom_role_assignments:getCustomRoleAssignments(),is_ongoing:isOngoing,start_episode_number:startEpNum,next_episode_number:isOngoing?startEpNum+epCount:null};
     await api.post('podcasts',pod);db.podcasts.push(pod);
     const tmpls=getTemplatesForType(pod.type),interval=freqDays(pod.frequency),sn=String(pod.season).padStart(2,'0');
-    const isFullProd=pod.type==='Full Production';
-    for(let i=0;i<pod.episode_count;i++){
-      const epLaunch=addDays(ld,i*interval),en=String(i+1).padStart(2,'0');
-      const ep={id:uid(),podcast_id:pod.id,number:i+1,title:'',default_title:`S${sn}E${en}`,launch_date:epLaunch,status:'To Do'};
+    const rm=buildRoleMap(pod);
+    for(let i=0;i<epCount;i++){
+      const epNum=startEpNum+i;
+      const epLaunch=addDays(ld,i*interval);
+      const ep={id:uid(),podcast_id:pod.id,number:epNum,title:'',default_title:`S${sn}E${epNum}`,launch_date:epLaunch,status:'To Do'};
       await api.post('episodes',ep);db.episodes.push(ep);
-      // Full Production: series tasks only on episode 1 (counted from series launch date)
-      const activeTmpls=isFullProd&&i>0?tmpls.filter(t=>!t.series):tmpls;
+      // Series tasks on episode 1 only (applies to all types)
+      const activeTmpls=i>0?tmpls.filter(t=>!t.series):tmpls;
       for(const tmpl of activeTmpls){
-        const rm={'Executive Producer':pod.ep,'Producer':pod.producer,'Assistant Producer':pod.ap||null,'Editor':pod.editor,'Accounts':pod.accounts||null};
         const launchRef=tmpl.series?ld:epLaunch;
         const task={id:uid(),episode_id:ep.id,name:tmpl.name,role:tmpl.role,assigned_to:rm[tmpl.role]||null,status:'To Do',due_date:tmpl.days>0?addDays(launchRef,-tmpl.days):launchRef,start_date:null,task_order:tmpl.order,notes:''};
         await api.post('tasks',task);db.tasks.push(task);
@@ -2114,8 +2458,8 @@ async function saveEpisode(){
     const tmpls=getTemplatesForType(pod.type);
     // Full Production: individually-added episodes only get per-episode tasks (series tasks live on ep1)
     const activeTmpls=pod.type==='Full Production'?tmpls.filter(t=>!t.series):tmpls;
+    const rm=buildRoleMap(pod);
     for(const tmpl of activeTmpls){
-      const rm={'Executive Producer':pod.ep,'Producer':pod.producer,'Assistant Producer':pod.ap||null,'Editor':pod.editor,'Accounts':pod.accounts||null};
       const task={id:uid(),episode_id:ep.id,name:tmpl.name,role:tmpl.role,assigned_to:rm[tmpl.role]||null,status:'To Do',due_date:tmpl.days>0?addDays(dv,-tmpl.days):dv,start_date:null,task_order:tmpl.order,notes:''};
       await api.post('tasks',task);db.tasks.push(task);
     }
@@ -2124,8 +2468,8 @@ async function saveEpisode(){
   finally{btn.disabled=false;btn.textContent='Create Episode + Tasks';}
 }
 
-function openNewPersonModal(){editingPersonId=null;document.getElementById('personModalTitle').textContent='Add Person';['f-personName','f-personEmail'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),'Producer');document.getElementById('f-personUserRole').value='User';openModal('modalPerson');}
-function openEditPersonModal(id){editingPersonId=id;const p=pById(id);if(!p)return;document.getElementById('personModalTitle').textContent='Edit Person';document.getElementById('f-personName').value=p.name;document.getElementById('f-personEmail').value=p.email||'';document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),p.role);document.getElementById('f-personUserRole').value=p.user_role||'User';openModal('modalPerson');}
+function openNewPersonModal(){editingPersonId=null;document.getElementById('personModalTitle').textContent='Add Person';['f-personName','f-personEmail','f-personPassword'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-personClearPwd').checked=false;document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),'Producer');document.getElementById('f-personUserRole').value='User';openModal('modalPerson');}
+function openEditPersonModal(id){editingPersonId=id;const p=pById(id);if(!p)return;document.getElementById('personModalTitle').textContent='Edit Person';document.getElementById('f-personName').value=p.name;document.getElementById('f-personEmail').value=p.email||'';document.getElementById('f-personPassword').value='';document.getElementById('f-personClearPwd').checked=false;document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),p.role);document.getElementById('f-personUserRole').value=p.user_role||'User';openModal('modalPerson');}
 
 async function savePerson(){
   const name=document.getElementById('f-personName').value.trim(),email=document.getElementById('f-personEmail').value.trim();
@@ -2133,9 +2477,13 @@ async function savePerson(){
   const btn=document.getElementById('savePersonBtn');btn.disabled=true;setSync('syncing');
   try{
     const data={name,email,role:document.getElementById('f-personRole').value,user_role:document.getElementById('f-personUserRole').value,active:true};
+    const pwdInput=document.getElementById('f-personPassword').value;
+    const clearPwd=document.getElementById('f-personClearPwd').checked;
+    if(clearPwd) data.password=null;
+    else if(pwdInput) data.password=pwdInput;
     if(editingPersonId){await api.patch('people',editingPersonId,data);Object.assign(pById(editingPersonId),data);}
     else{data.id=uid();await api.post('people',data);db.people.push(data);}
-    setSync('live');closeModal();renderPeople();populateUserSwitcher();notify(editingPersonId?'Person updated':'Person added!');
+    setSync('live');closeModal();renderPeople();populateUserSwitcher();notify(editingPersonId?'Person updated':'Person added! Use the 📧 button to send them their login instructions.');
   }catch(e){setSync('error');notify('Error: '+e.message,true);}
   finally{btn.disabled=false;}
 }
@@ -2407,6 +2755,85 @@ async function saveAdhocTask(){
 }
 
 // ============================================================
+// ADD TASK FROM ALL TASKS VIEW
+// ============================================================
+function openAllTaskAdd(){
+  document.getElementById('f-atName').value='';
+  document.getElementById('f-atDue').value='';
+  document.getElementById('f-atNotes').value='';
+  document.getElementById('f-atStatus').value='To Do';
+  document.getElementById('f-atScopeHint').textContent='';
+  document.getElementById('f-atScopeRow').style.display='none';
+  document.getElementById('f-atEpisodeRow').classList.add('hidden');
+  document.getElementById('f-atScope').value='series';
+  document.getElementById('f-atAssigned').innerHTML='<option value="">— Unassigned —</option>'+db.people.map(p=>`<option value="${p.id}">${p.name} (${p.role})</option>`).join('');
+  document.getElementById('f-atRole').innerHTML='<option value="">— No role —</option>'+getTaskRoles().map(r=>`<option>${r}</option>`).join('');
+  document.getElementById('f-atPodcast').innerHTML='<option value="">— Standalone (no podcast) —</option>'+db.podcasts.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  if(filterPersonIds.size===1) document.getElementById('f-atAssigned').value=[...filterPersonIds][0];
+  openModal('modalAllTaskAdd');
+}
+
+function onAtPodcastChange(){
+  const pod=document.getElementById('f-atPodcast').value;
+  document.getElementById('f-atScopeRow').style.display=pod?'block':'none';
+  document.getElementById('f-atEpisodeRow').classList.add('hidden');
+  if(pod){document.getElementById('f-atScope').value='series';document.getElementById('f-atScopeHint').textContent='';}
+}
+
+function onAtScopeChange(){
+  const scope=document.getElementById('f-atScope').value;
+  const podId=document.getElementById('f-atPodcast').value;
+  if(scope==='one'){
+    const eps=db.episodes.filter(e=>e.podcast_id===podId).sort((a,b)=>a.number-b.number);
+    document.getElementById('f-atEpisode').innerHTML=eps.map(e=>`<option value="${e.id}">${e.default_title||'E'+e.number}${e.title?' · '+e.title:''}</option>`).join('');
+    document.getElementById('f-atEpisodeRow').classList.remove('hidden');
+  } else {
+    document.getElementById('f-atEpisodeRow').classList.add('hidden');
+  }
+  const eps=db.episodes.filter(e=>e.podcast_id===podId);
+  document.getElementById('f-atScopeHint').textContent=scope==='all'?`Will add to all ${eps.length} episode${eps.length!==1?'s':''}.`:'';
+}
+
+async function saveAllTask(){
+  const name=document.getElementById('f-atName').value.trim();
+  if(!name){alert('Task name is required');return;}
+  const btn=document.getElementById('saveAtBtn');btn.disabled=true;setSync('syncing');
+  try{
+    const assignedTo=document.getElementById('f-atAssigned').value||null;
+    const role=document.getElementById('f-atRole').value||null;
+    const dueDate=document.getElementById('f-atDue').value||null;
+    const status=document.getElementById('f-atStatus').value;
+    const notes=document.getElementById('f-atNotes').value.trim();
+    const podId=document.getElementById('f-atPodcast').value||null;
+    const scope=document.getElementById('f-atScope').value;
+    const episodeId=document.getElementById('f-atEpisode').value||null;
+
+    if(!podId||scope==='series'){
+      const data={id:uid(),name,assigned_to:assignedTo,due_date:dueDate,podcast_id:podId,episode_id:null,status,notes};
+      await api.post('todos',data);db.todos.push(data);
+      notify('Task added!');
+    } else if(scope==='one'){
+      const existing=epTasks(episodeId);
+      const maxOrder=existing.length?Math.max(...existing.map(t=>t.task_order)):100;
+      const data={id:uid(),episode_id:episodeId,name,role,assigned_to:assignedTo,status,due_date:dueDate,start_date:null,task_order:maxOrder+10,notes};
+      await api.post('tasks',data);db.tasks.push(data);
+      notify('Task added to episode!');
+    } else {
+      const episodes=db.episodes.filter(e=>e.podcast_id===podId);
+      for(const ep of episodes){
+        const existing=epTasks(ep.id);
+        const maxOrder=existing.length?Math.max(...existing.map(t=>t.task_order)):100;
+        const data={id:uid(),episode_id:ep.id,name,role,assigned_to:assignedTo,status,due_date:dueDate,start_date:null,task_order:maxOrder+10,notes};
+        await api.post('tasks',data);db.tasks.push(data);
+      }
+      notify(`Task added to ${episodes.length} episode${episodes.length!==1?'s':''}!`);
+    }
+    setSync('live');closeModal();renderAllTasks();
+  }catch(e){setSync('error');notify('Error: '+e.message,true);}
+  finally{btn.disabled=false;}
+}
+
+// ============================================================
 // IMPORT TODOS
 // ============================================================
 let importRows = [];
@@ -2647,8 +3074,8 @@ async function applyBulkUpdate(){
   if(!selectedTaskIds.size) return;
   const status = document.getElementById('bulkStatus').value;
   const assignee = document.getElementById('bulkAssignee').value;
-  const days = parseInt(document.getElementById('bulkDays').value);
-  if(!status && !assignee && !days){ notify('Pick something to update first'); return; }
+  const dateVal = document.getElementById('bulkDate').value;
+  if(!status && !assignee && !dateVal){ notify('Pick something to update first'); return; }
   if(!confirm('Update ' + selectedTaskIds.size + ' tasks?')) return;
   setSync('syncing');
   const prevStates=[];
@@ -2660,7 +3087,7 @@ async function applyBulkUpdate(){
       prevStates.push({id:tid,status:t.status,assigned_to:t.assigned_to,due_date:t.due_date});
       if(status) patch.status = status;
       if(assignee) patch.assigned_to = assignee;
-      if(days && t.due_date) patch.due_date = addDays(t.due_date, days);
+      if(dateVal) patch.due_date = dateVal;
       if(Object.keys(patch).length){
         await api.patch('tasks', tid, patch);
         Object.assign(t, patch);
@@ -2684,10 +3111,64 @@ async function applyBulkUpdate(){
 
 
 // ============================================================
+// EPISODE BULK ACTIONS
+// ============================================================
+function onEpTaskCheckbox(){
+  selectedEpTaskIds=new Set([...document.querySelectorAll('.ep-task-cb:checked')].map(b=>b.dataset.id));
+  const all=document.querySelectorAll('.ep-task-cb');
+  const selAll=document.getElementById('selectAllEpTasks');
+  if(selAll)selAll.checked=selectedEpTaskIds.size===all.length&&all.length>0;
+  updateEpBulkBar();
+}
+function toggleSelectAllEpTasks(cb){
+  const boxes=document.querySelectorAll('.ep-task-cb');
+  boxes.forEach(b=>b.checked=cb.checked);
+  selectedEpTaskIds=cb.checked?new Set([...boxes].map(b=>b.dataset.id)):new Set();
+  updateEpBulkBar();
+}
+function updateEpBulkBar(){
+  const bar=document.getElementById('epBulkBar');if(!bar)return;
+  if(selectedEpTaskIds.size>0){
+    bar.classList.remove('hidden');
+    document.getElementById('epBulkCount').textContent=selectedEpTaskIds.size+' task'+(selectedEpTaskIds.size!==1?'s':'')+' selected';
+    document.getElementById('epBulkAssignee').innerHTML='<option value="">Reassign to…</option>'+db.people.map(p=>'<option value="'+p.id+'">'+p.name+'</option>').join('');
+  }else{bar.classList.add('hidden');}
+}
+function clearEpBulkSelection(){
+  selectedEpTaskIds=new Set();
+  document.querySelectorAll('.ep-task-cb').forEach(b=>b.checked=false);
+  const selAll=document.getElementById('selectAllEpTasks');if(selAll)selAll.checked=false;
+  updateEpBulkBar();
+}
+async function applyEpBulkUpdate(){
+  if(!selectedEpTaskIds.size)return;
+  const status=document.getElementById('epBulkStatus').value;
+  const assignee=document.getElementById('epBulkAssignee').value;
+  const dateVal=document.getElementById('epBulkDate').value;
+  if(!status&&!assignee&&!dateVal){notify('Pick something to update first');return;}
+  if(!confirm('Update '+selectedEpTaskIds.size+' tasks?'))return;
+  setSync('syncing');
+  const prevStates=[];
+  try{
+    for(const tid of selectedEpTaskIds){
+      const t=db.tasks.find(t=>t.id===tid);if(!t)continue;
+      const patch={};
+      prevStates.push({id:tid,status:t.status,assigned_to:t.assigned_to,due_date:t.due_date});
+      if(status)patch.status=status;
+      if(assignee)patch.assigned_to=assignee;
+      if(dateVal)patch.due_date=dateVal;
+      if(Object.keys(patch).length){await api.patch('tasks',tid,patch);Object.assign(t,patch);}
+    }
+    setSync('live');
+    saveUndo(async()=>{for(const ps of prevStates){const t=db.tasks.find(t=>t.id===ps.id);if(!t)continue;const rev={status:ps.status,assigned_to:ps.assigned_to,due_date:ps.due_date};await api.patch('tasks',ps.id,rev);Object.assign(t,rev);}});
+    clearEpBulkSelection();renderEpisodeTasks();notify('Bulk update applied!');
+  }catch(err){setSync('error');notify('Error: '+err.message,true);}
+}
+
+// ============================================================
 // EMAIL NOTIFICATIONS (Resend)
 // ============================================================
 const STATUSES=['To Do','In Progress','In Review','Waiting / Blocked','Complete'];
-const RESEND_KEY = ''; // Do not put API keys here — this file is public on GitHub
 const FROM_EMAIL = 'onboarding@resend.dev'; // Temporary -- swap to workflow@bengomedia.com once domain is verified
 
 async function sendEmail(to, subject, html){
@@ -2770,10 +3251,7 @@ async function sendUrgentReminders(){
 
 
 function renderEmailConfig(){
-  const hasKey = !!RESEND_KEY;
-  const keyStatus = hasKey
-    ? '<div style="color:var(--complete-text);margin-bottom:12px">&#10003; Resend connected</div>'
-    : '<div style="color:var(--accent2);margin-bottom:12px">&#9888; No Resend API key configured</div><p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Sign up free at <a href="https://resend.com" target="_blank" style="color:var(--accent)">resend.com</a>, get your API key, then ask Emma to add it to the app code. You also need a verified sending domain.</p>';
+  const keyStatus = '<div style="color:var(--complete-text);margin-bottom:12px">&#10003; Resend configured via Netlify</div>';
   document.getElementById('emailConfigSection').innerHTML =
     '<div class="section-header"><div class="section-title">Email Settings</div></div>' +
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;max-width:500px">' +
@@ -2839,8 +3317,8 @@ async function saveBatchEpisodes(){
       const ep = {id:uid(),podcast_id:batchPodcastId,number:startNum+i,title:'',default_title:`S${sn}E${en}`,launch_date:epLaunch,status:'To Do'};
       await api.post('episodes',ep);
       db.episodes.push(ep);
+      const rm=buildRoleMap(pod);
       for(const tmpl of activeTmpls){
-        const rm={'Executive Producer':pod.ep,'Producer':pod.producer,'Assistant Producer':pod.ap||null,'Editor':pod.editor,'Accounts':pod.accounts};
         const task={id:uid(),episode_id:ep.id,name:tmpl.name,role:tmpl.role,assigned_to:rm[tmpl.role]||null,status:'To Do',due_date:tmpl.days>0?addDays(epLaunch,-tmpl.days):epLaunch,start_date:null,task_order:tmpl.order,notes:''};
         await api.post('tasks',task);
         db.tasks.push(task);
@@ -2930,12 +3408,126 @@ async function saveReschedule(){
   }
 }
 
+let reschedulingPodcastId = null;
+
+function openReschedulePodcastModal(podId){
+  reschedulingPodcastId = podId;
+  const pod = podById(podId);
+  if(!pod) return;
+  const eps = db.episodes.filter(e => e.podcast_id === podId);
+  const taskCount = eps.reduce((n,e) => n + epTasks(e.id).length, 0);
+  document.getElementById('f-rpPodName').textContent = pod.name + ' — ' + eps.length + ' episode' + (eps.length!==1?'s':'') + ', ' + taskCount + ' tasks';
+  document.getElementById('f-rpDays').value = '7';
+  document.getElementById('f-rpDir').value = '1';
+  document.getElementById('rpPreview').textContent = '';
+  previewReschedulePodcast();
+  openModal('modalReschedulePodcast');
+}
+
+function previewReschedulePodcast(){
+  const pod = podById(reschedulingPodcastId);
+  if(!pod) return;
+  const days = parseInt(document.getElementById('f-rpDays').value) || 0;
+  const dir = parseInt(document.getElementById('f-rpDir').value);
+  const eps = db.episodes.filter(e => e.podcast_id === reschedulingPodcastId);
+  const taskCount = eps.reduce((n,e) => n + epTasks(e.id).length, 0);
+  const el = document.getElementById('rpPreview');
+  if(!days){ el.textContent = ''; return; }
+  const dirLabel = dir > 0 ? 'forward' : 'back';
+  el.textContent = `↻ ${eps.length} episode${eps.length!==1?'s':''} and ${taskCount} task${taskCount!==1?'s':''} will shift ${days} day${days!==1?'s':''} ${dirLabel}.`;
+}
+
+async function saveReschedulePodcast(){
+  const pod = podById(reschedulingPodcastId);
+  if(!pod) return;
+  const days = parseInt(document.getElementById('f-rpDays').value);
+  if(!days || days < 1){ alert('Please enter a number of days'); return; }
+  const dir = parseInt(document.getElementById('f-rpDir').value);
+  const diff = days * dir;
+
+  const btn = document.getElementById('saveRpBtn');
+  btn.disabled = true; btn.textContent = 'Rescheduling…';
+  setSync('syncing');
+
+  try {
+    const eps = db.episodes.filter(e => e.podcast_id === reschedulingPodcastId);
+    let taskCount = 0;
+    for(const ep of eps){
+      // Shift episode launch date
+      if(ep.launch_date){
+        const newDate = addDays(ep.launch_date, diff);
+        await api.patch('episodes', ep.id, { launch_date: newDate });
+        ep.launch_date = newDate;
+      }
+      // Shift all task due dates for this episode
+      const tasks = epTasks(ep.id);
+      for(const t of tasks){
+        if(!t.due_date) continue;
+        const shifted = addDays(t.due_date, diff);
+        await api.patch('tasks', t.id, { due_date: shifted });
+        t.due_date = shifted;
+        taskCount++;
+      }
+    }
+    setSync('live');
+    closeModal();
+    if(currentView === 'episodes') renderEpisodes();
+    else renderPodcasts();
+    const dirLabel = diff > 0 ? 'forward' : 'back';
+    notify(`Podcast rescheduled — ${eps.length} episodes and ${taskCount} tasks shifted ${Math.abs(diff)} day${Math.abs(diff)!==1?'s':''} ${dirLabel}`);
+  } catch(e){
+    setSync('error');
+    notify('Reschedule failed: ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Reschedule All Episodes + Tasks';
+  }
+}
+
 // ============================================================
 // LOGIN
 // ============================================================
 function showLoginScreen(){
-  document.getElementById('loginGrid').innerHTML=db.people.map(p=>`<div class="login-card" onclick="login('${p.id}')"><div class="login-avatar">${ini(p.name)}</div><div class="login-name">${p.name}</div><div class="login-role">${p.role}</div></div>`).join('');
+  document.getElementById('loginGrid').innerHTML=db.people.map(p=>`<div class="login-card" onclick="attemptLogin('${p.id}')"><div class="login-avatar">${ini(p.name)}</div><div class="login-name">${p.name}</div><div class="login-role">${p.role}</div></div>`).join('');
   document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginGrid').style.display='';
+  document.getElementById('loginPasswordPrompt').style.display='none';
+  document.getElementById('loginSub').textContent='Who are you?';
+}
+
+let _loginAttemptId=null;
+function attemptLogin(personId){
+  const person=pById(personId);if(!person)return;
+  if(person.password){
+    _loginAttemptId=personId;
+    document.getElementById('loginGrid').style.display='none';
+    document.getElementById('loginPasswordName').textContent=person.name;
+    document.getElementById('loginPasswordInput').value='';
+    document.getElementById('loginPasswordError').textContent='';
+    document.getElementById('loginPasswordPrompt').style.display='';
+    document.getElementById('loginSub').textContent='Enter your password';
+    setTimeout(()=>document.getElementById('loginPasswordInput').focus(),50);
+  } else {
+    login(personId);
+  }
+}
+
+function submitLoginPassword(){
+  const person=pById(_loginAttemptId);if(!person)return;
+  const entered=document.getElementById('loginPasswordInput').value;
+  if(entered===person.password){
+    login(_loginAttemptId);
+  } else {
+    document.getElementById('loginPasswordError').textContent='Incorrect password. Try again.';
+    document.getElementById('loginPasswordInput').value='';
+    document.getElementById('loginPasswordInput').focus();
+  }
+}
+
+function cancelLoginPassword(){
+  _loginAttemptId=null;
+  document.getElementById('loginGrid').style.display='';
+  document.getElementById('loginPasswordPrompt').style.display='none';
+  document.getElementById('loginSub').textContent='Who are you?';
 }
 
 function login(personId){
@@ -2958,15 +3550,15 @@ function setupForUser(){
   document.getElementById('sidebarUser').style.display='flex';
   document.getElementById('sidebarAvatar').textContent=ini(loggedInUser.name);
   document.getElementById('sidebarUserName').textContent=loggedInUser.name;
-  const adminOnlyNav=['nav-companies','nav-contacts','nav-podcasts','nav-tasks','nav-gantt','nav-settings'];
+  filterPersonIds=new Set([loggedInUser.id]);
+  document.querySelector('.user-switcher').style.display='none';
+  const adminOnlyNav=['nav-companies','nav-contacts','nav-podcasts','nav-gantt','nav-settings'];
   if(!isAdmin){
     adminOnlyNav.forEach(id=>document.getElementById(id)?.classList.add('hidden'));
-    currentUser=loggedInUser.id;
-    document.getElementById('currentUser').value=loggedInUser.id;
-    document.querySelector('.user-switcher').style.display='none';
+    document.getElementById('msWrapPerson').style.display='none';
   } else {
     adminOnlyNav.forEach(id=>document.getElementById(id)?.classList.remove('hidden'));
-    document.querySelector('.user-switcher').style.display='';
+    document.getElementById('msWrapPerson').style.display='';
   }
 }
 
@@ -3380,8 +3972,8 @@ async function applyMyBulkUpdate(){
   if(!selectedMyTaskIds.size)return;
   const status=document.getElementById('myBulkStatus').value;
   const assignee=isAdmin?document.getElementById('myBulkAssignee').value:'';
-  const days=parseInt(document.getElementById('myBulkDays').value);
-  if(!status&&!assignee&&!days){notify('Pick something to update first');return;}
+  const dateVal=document.getElementById('myBulkDate').value;
+  if(!status&&!assignee&&!dateVal){notify('Pick something to update first');return;}
   if(!confirm('Update '+selectedMyTaskIds.size+' tasks?'))return;
   const prevValues=[...selectedMyTaskIds].map(tid=>{const t=db.tasks.find(t=>t.id===tid);return{id:tid,status:t?.status,assigned_to:t?.assigned_to,due_date:t?.due_date};});
   setSync('syncing');
@@ -3391,10 +3983,10 @@ async function applyMyBulkUpdate(){
       const patch={};
       if(status)patch.status=status;
       if(assignee)patch.assigned_to=assignee;
-      if(days&&t.due_date)patch.due_date=addDays(t.due_date,days);
+      if(dateVal)patch.due_date=dateVal;
       if(Object.keys(patch).length){await api.patch('tasks',tid,patch);Object.assign(t,patch);}
     }
-    saveUndo(async()=>{for(const prev of prevValues){const t=db.tasks.find(t=>t.id===prev.id);if(!t)continue;const r={};if(status)r.status=prev.status;if(assignee)r.assigned_to=prev.assigned_to;if(days)r.due_date=prev.due_date;if(Object.keys(r).length){await api.patch('tasks',prev.id,r);Object.assign(t,r);}}});
+    saveUndo(async()=>{for(const prev of prevValues){const t=db.tasks.find(t=>t.id===prev.id);if(!t)continue;const r={};if(status)r.status=prev.status;if(assignee)r.assigned_to=prev.assigned_to;if(dateVal)r.due_date=prev.due_date;if(Object.keys(r).length){await api.patch('tasks',prev.id,r);Object.assign(t,r);}}});
     setSync('live');clearMyBulkSelection();renderMyTasks();notify('Bulk update applied!');
   }catch(err){setSync('error');notify('Error: '+err.message,true);}
 }

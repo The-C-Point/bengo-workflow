@@ -6,21 +6,28 @@ Your quick reference for using the app day to day.
 
 ## Getting in
 
-Open the app in your browser. Click your name on the login screen to get started — no password needed.
+Open the app in your browser. Click your name on the login screen, then enter your password.
 
-**Admins** (Steve and Emma) can see everything. **Everyone else** sees only their own tasks and to-dos.
+If no password has been set for your account yet, clicking your name will log you straight in. Ask Steve or Emma to set one for you via Settings → Users.
 
-To switch between people (Admins only), use the **Viewing as** dropdown in the bottom-left sidebar.
+**Admins** (Steve and Emma) can see everything and filter by any person. **Everyone else** sees only their own tasks.
 
 ---
 
 ## Finding your tasks
 
-**My Tasks** (sidebar) — your open episode tasks and to-dos in one place. Click any task row to open the episode it belongs to.
+**All Tasks** (sidebar) — opens showing your own tasks by default. Use the filters at the top to adjust what you see:
 
-**All Tasks** — every open task across all podcasts. Filter by status, podcast, or role. Switch between Table and Kanban views using the toggle top-right.
+- **Person** — admins can switch to another team member or click **Show everyone** to see the full team. Non-admins are always locked to their own view.
+- **Status** — defaults to open tasks (everything except Complete). Tick multiple statuses at once — e.g. "In Review" and "Waiting / Blocked" together.
+- **Podcast** — filter by one or more podcasts. Choose **— Standalone —** to see tasks not tied to any podcast.
+- **Role** — filter by one or more roles (Producer, Editor, etc.).
 
-Use the **search bar** at the top of My Tasks, All Tasks, or To-Dos to filter as you type — searches across task name, podcast, company, notes, and assignee.
+To clear a single filter, open its dropdown and click **Clear** at the top. To reset all filters at once, click **✕ Clear filters** in the filter bar (it only appears when at least one filter is active).
+
+Switch between Table and Kanban views using the toggle top-right.
+
+Use the **search bar** at the top of All Tasks to filter as you type — searches across task name, podcast, company, notes, and assignee.
 
 ---
 
@@ -29,9 +36,11 @@ Use the **search bar** at the top of My Tasks, All Tasks, or To-Dos to filter as
 Click the coloured status pill on any task to cycle it forward:
 `To Do → In Progress → In Review → Waiting / Blocked → Complete`
 
-Or click the ✏️ icon to open the full edit panel — change assignee, due date, status, and add notes.
+Click anywhere on a task row (in All Tasks or My Tasks) to open the full edit panel — change assignee, due date, status, and add notes. To go to the episode the task belongs to, click the episode name in the row instead.
 
-**On the Kanban board** — click any card to open a quick-edit popup. Change the status, due date, or assignee inline, then save. Click 🔍 to open the full task detail.
+**On the Kanban board** — drag a card into a different column to change its status. Or click a card to open a quick-edit popup where you can change the status, due date, or assignee inline. Click 🔍 to open the full task detail.
+
+**Reassignment notifications** — if you reassign a task to someone else, they'll automatically get an email letting them know.
 
 ---
 
@@ -51,12 +60,15 @@ Click a podcast → click an episode to see all its tasks. From here you can:
 - Add an ad hoc task (+ Ad Hoc Task button)
 - Notify the team by email (📧 Notify Team button)
 - Reschedule the episode (📅 icon on the episodes list) — all task dates shift automatically
+- Reschedule the entire podcast (📅 button in the topbar or on the podcast card) — shifts every episode launch date and every task due date by the same number of days
 
 ---
 
 ## Podcasts
 
 **New Podcast** creates the podcast, all episodes, and all tasks in one go. Choose the type carefully — it determines which task template is used.
+
+**Ongoing series** — tick the "This is an ongoing series" box for a podcast that runs indefinitely. The app creates 12 episodes to start, then adds the next one automatically whenever "Podcast Scheduled" is marked complete — so there are always up to 12 active episodes in the pipeline. Ongoing podcasts show a 🔄 badge on the card.
 
 You can paste a **Google Drive folder link** when creating a podcast (or add it later by editing). A 📁 icon will appear on the podcast card for quick access. A to-do is automatically created to remind the team to set up the folder — it ticks itself off once the link is added.
 
@@ -66,28 +78,55 @@ You can paste a **Google Drive folder link** when creating a podcast (or add it 
 
 ---
 
+## Contacts
+
+The **Contacts** view lists every contact person across all companies in one searchable table — name, role (Main/Accounts/Second/Third), company, phone, and email.
+
+Click **View** to open a contact's individual detail page. Click **Company →** to jump straight to their company record.
+
+---
+
 ## Companies
 
-The **Companies** view (top of the sidebar) groups all podcasts by client company. Active clients appear first. Use the search bar to find a company or podcast quickly.
+The **Companies** view is your client CRM. Each company card shows the main contact and links through to the full company record.
+
+**Adding a company** — click **+ Add Company** and fill in:
+- Company name, registration number, VAT number
+- Billing address and correspondence address (tick "Same as billing" if they match)
+- Main contact (name, phone, email)
+- Accounts / Finance contact
+- Second and third contacts
+- Any notes
+
+**Company detail** — click a company card to open the full record. From here you can also add a podcast directly — it pre-fills the company name automatically.
+
+**Deleting a company** is blocked if any podcasts are linked to it. Unlink or delete the podcasts first.
+
+Podcasts that were created before the CRM was set up (with a company name typed freehand) appear in an "unlinked" section at the bottom until a matching company record is added.
 
 ---
 
 ## Bulk updates
 
-On **All Tasks** and **My Tasks**, tick the checkboxes next to tasks to select them. The bulk bar at the top lets you:
+On **All Tasks**, **My Tasks**, and the **episode tasks view**, tick the checkboxes next to tasks to select them. The bulk bar at the top lets you:
 - Change status for all selected tasks at once
 - Reassign to a different person (Admins only)
-- Shift all due dates forward or back by a number of days
+- Set all due dates to a specific date using the date picker
 
 Hit **↩ Oh Crap** straight after if you need to undo it.
 
 ---
 
-## To-Dos
+## Adding a task
 
-Freestanding tasks that aren't tied to an episode (chasing a client, admin tasks, etc.). Add via **+ New To-Do**. You can link a to-do to a podcast and episode for context.
+Click **+ Add Task** in the top-right of All Tasks to create a new task. You can add:
 
-Import a batch of to-dos via **↑ Import** using the CSV template.
+- A **standalone task** — not linked to any podcast (admin tasks, one-offs, etc.)
+- A **series task** — linked to a podcast but not a specific episode
+- A task on a **specific episode**
+- A task **repeated across all episodes** of a podcast
+
+Import a batch of tasks via **↑ Import** in the All Tasks topbar.
 
 ---
 
@@ -122,8 +161,49 @@ Full Production is the most complex type. Series-level tasks (discovery, pre-pro
 
 ---
 
+## Settings (Admins only)
+
+The **Settings** section (bottom of the sidebar) is where admins manage the configuration behind the app.
+
+### Users
+Add, edit, or remove team members. Same as the old People screen.
+
+### Roles
+Add custom roles to reflect how your organisation is structured — for example, Marketing Assistant, Admin Assistant, Social Media Manager. Custom roles appear everywhere roles are used: the team member form, task template assignment, ad hoc task assignment, and the All Tasks filter.
+
+Built-in roles (Executive Producer, Producer, Editor, Marketer, Accounts, Admin) are locked and can't be removed. Custom roles can be deleted as long as no team members currently have that role.
+
+### Task Templates
+Manage the tasks that get auto-generated when a new podcast or episode is created.
+
+- Use the type buttons at the top to switch between podcast types
+- **Add Task** — add a single task via the form
+- **Export CSV** — download the current task list as a spreadsheet
+- **Import CSV** — upload a CSV to replace the entire task list for that type (see format guide inside the tab)
+- **Reset to defaults** — appears when you've customised a type; wipes your changes and restores the built-in list
+- A **●** next to a type name means it has been customised and is saved to the database
+
+**CSV format** (shown in the in-app guide):
+
+| Column | Required | Notes |
+|---|---|---|
+| `id` | No | e.g. `TT-0010`. Auto-generated if blank. |
+| `task_name` | Yes | Label shown to the team |
+| `role` | Yes | Producer, Editor, Executive Producer, Marketer, Accounts |
+| `task_order` | Yes | Sort order. Use 10, 20, 30… Lower = first. |
+| `days_before_launch` | Yes | Days before launch date. 0 = launch day. |
+| `series_level` | Full Production only | `series` (runs once) or `episode` (repeats). Leave blank for other types. |
+
+Always export before importing — import replaces the entire list.
+
+### Podcast Types
+View all types, edit descriptions, and add custom types for workflows beyond the built-in five. Click **Edit tasks ▸** on any type to jump straight to its template.
+
+---
+
 ## Tips
 
 - The **Overdue** count on the dashboard updates live — aim to keep it at zero.
 - Episode titles are editable inline on the episodes list — just click and type.
 - The **↩ Oh Crap** button only remembers the *last* action — if you do two things, you can only undo the most recent one.
+- The **↻** button next to the sync indicator (bottom of the sidebar) refreshes all data from the database without reloading the page — useful if a colleague has just made changes and you want to see them immediately.
