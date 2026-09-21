@@ -1,5 +1,8 @@
 [build]
   functions = "netlify/functions"
 
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "SUPA_KEY"
+
 [functions."send-digest"]
   schedule = "0 9 * * 1-5"
