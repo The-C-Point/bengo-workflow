@@ -137,6 +137,14 @@ See CLAUDE.md for full schema.
 - Task templates now loaded from Supabase `task_templates` table at startup (falls back to hardcoded if empty)
 - Podcast creation modal type dropdown now dynamic — picks up custom types automatically
 
+### 21 September 2026
+- **Email preferences per person** — Settings → Users edit form now has two toggles: "Notify when assigned a task" and "Daily task digest (9am Mon–Fri)"; both on by default for all new and existing team members
+- **Task assignment emails respect preferences** — assignment notification only fires if the recipient has task_assigned toggled on
+- **Daily digest scheduled function** (`netlify/functions/send-digest.js`) — runs 9am UTC Mon–Fri via Netlify scheduled functions; each person with digest enabled gets their open tasks grouped by podcast, with overdue tasks flagged; Executive Producer gets an extra section showing all overdue and due-within-7-days tasks across the whole team
+- **netlify.toml** added to register functions directory
+- SQL required: `ALTER TABLE people ADD COLUMN IF NOT EXISTS email_preferences jsonb;` (run in Supabase)
+- Env vars required in Netlify: `SUPA_URL`, `SUPA_KEY`, `RESEND_KEY`, `FROM_EMAIL`
+
 ### 20 September 2026
 - **Bulk edit on episode view** — checkboxes on every task row in the episode tasks view; select-all checkbox in header; sticky bulk bar lets you set status, reassign, or set a specific due date for all selected tasks; undo supported
 - **Episode filter on All Tasks** — new "All Episodes" multi-select dropdown filter in the All Tasks filter bar; cascades with the podcast filter (only shows episodes for selected podcasts)

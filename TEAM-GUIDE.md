@@ -138,12 +138,16 @@ Visual timeline of all episodes and their tasks. Use the filter to focus on one 
 
 ## Emails
 
-Two ways to send notifications:
+Three ways notifications go out:
 
-- **📧 Notify Team** (on an episode) — emails each person their open tasks for that episode
-- **⏰ Send Reminders** (on the dashboard) — emails everyone who has tasks due within 3 days
+- **Task assigned** — when you're assigned a task (or reassigned one), you'll get an email straight away
+- **📧 Notify Team** (on an episode) — manually emails each person their open tasks for that episode
+- **⏰ Send Reminders** (on the dashboard) — manually emails everyone who has tasks due within 3 days
+- **Daily digest** — automatic email at 9am every weekday showing each person their open tasks; Steve also gets a section flagging anything overdue or due within 7 days across the whole team
 
 Emails come from `onboarding@resend.dev` for now — this will switch to `workflow@bengomedia.com` once domain verification is complete.
+
+To turn off any of these for a specific person, go to **Settings → Users**, edit their profile, and untick the relevant option under Email Notifications.
 
 ---
 
