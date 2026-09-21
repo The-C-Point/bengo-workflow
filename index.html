@@ -479,6 +479,13 @@
     <div class="form-row"><div class="form-group"><label>Full Name</label><input type="text" id="f-personName"></div><div class="form-group"><label>Email</label><input type="email" id="f-personEmail"></div></div>
     <div class="form-row"><div class="form-group"><label>Role</label><select id="f-personRole"></select></div><div class="form-group"><label>App Access</label><select id="f-personUserRole"><option value="User">User</option><option value="Admin">Admin</option></select></div></div>
     <div class="form-row"><div class="form-group"><label>Password</label><input type="password" id="f-personPassword" placeholder="Leave blank to keep existing" autocomplete="new-password"></div><div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px"><label style="display:flex;align-items:center;gap:6px;text-transform:none;font-size:13px;cursor:pointer;font-weight:400"><input type="checkbox" id="f-personClearPwd" style="width:auto;accent-color:var(--accent)" onchange="if(this.checked)document.getElementById('f-personPassword').value=''"> Clear password (allow login without password)</label></div></div>
+    <div style="border-top:1px solid var(--border);margin:12px 0;padding-top:12px">
+      <div style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Email Notifications</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px"><input type="checkbox" id="f-emailTaskAssigned" style="accent-color:var(--accent);width:16px;height:16px"> Notify when assigned a task</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px"><input type="checkbox" id="f-emailDigest" style="accent-color:var(--accent);width:16px;height:16px"> Daily task digest (9am Mon–Fri)</label>
+      </div>
+    </div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn" id="savePersonBtn" onclick="savePerson()">Save</button></div>
   </div>
 
@@ -2468,15 +2475,15 @@ async function saveEpisode(){
   finally{btn.disabled=false;btn.textContent='Create Episode + Tasks';}
 }
 
-function openNewPersonModal(){editingPersonId=null;document.getElementById('personModalTitle').textContent='Add Person';['f-personName','f-personEmail','f-personPassword'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-personClearPwd').checked=false;document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),'Producer');document.getElementById('f-personUserRole').value='User';openModal('modalPerson');}
-function openEditPersonModal(id){editingPersonId=id;const p=pById(id);if(!p)return;document.getElementById('personModalTitle').textContent='Edit Person';document.getElementById('f-personName').value=p.name;document.getElementById('f-personEmail').value=p.email||'';document.getElementById('f-personPassword').value='';document.getElementById('f-personClearPwd').checked=false;document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),p.role);document.getElementById('f-personUserRole').value=p.user_role||'User';openModal('modalPerson');}
+function openNewPersonModal(){editingPersonId=null;document.getElementById('personModalTitle').textContent='Add Person';['f-personName','f-personEmail','f-personPassword'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-personClearPwd').checked=false;document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),'Producer');document.getElementById('f-personUserRole').value='User';document.getElementById('f-emailTaskAssigned').checked=true;document.getElementById('f-emailDigest').checked=true;openModal('modalPerson');}
+function openEditPersonModal(id){editingPersonId=id;const p=pById(id);if(!p)return;document.getElementById('personModalTitle').textContent='Edit Person';document.getElementById('f-personName').value=p.name;document.getElementById('f-personEmail').value=p.email||'';document.getElementById('f-personPassword').value='';document.getElementById('f-personClearPwd').checked=false;document.getElementById('f-personRole').innerHTML=roleOptions(getPersonRoles(),p.role);document.getElementById('f-personUserRole').value=p.user_role||'User';const ep=p.email_preferences||{};document.getElementById('f-emailTaskAssigned').checked=ep.task_assigned!==false;document.getElementById('f-emailDigest').checked=ep.digest!==false;openModal('modalPerson');}
 
 async function savePerson(){
   const name=document.getElementById('f-personName').value.trim(),email=document.getElementById('f-personEmail').value.trim();
   if(!name||!email){alert('Name and email required');return;}
   const btn=document.getElementById('savePersonBtn');btn.disabled=true;setSync('syncing');
   try{
-    const data={name,email,role:document.getElementById('f-personRole').value,user_role:document.getElementById('f-personUserRole').value,active:true};
+    const data={name,email,role:document.getElementById('f-personRole').value,user_role:document.getElementById('f-personUserRole').value,active:true,email_preferences:{task_assigned:document.getElementById('f-emailTaskAssigned').checked,digest:document.getElementById('f-emailDigest').checked}};
     const pwdInput=document.getElementById('f-personPassword').value;
     const clearPwd=document.getElementById('f-personClearPwd').checked;
     if(clearPwd) data.password=null;
@@ -2524,12 +2531,12 @@ async function saveTask(){
       }
     }
 
-    // Reassignment notification
+    // Assignment notification (initial or reassignment)
     if(data.assigned_to && data.assigned_to!==prevAssignedTo){
       const newPerson=pById(data.assigned_to);
       const ep=epById(t.episode_id);
       const pod=ep?podById(ep.podcast_id):null;
-      if(newPerson&&newPerson.email){
+      if(newPerson&&newPerson.email&&(newPerson.email_preferences||{}).task_assigned!==false){
         const epLabel=ep?(ep.default_title||'Episode '+ep.number):'';
         const podLabel=pod?pod.name:'';
         sendEmail(newPerson.email,
