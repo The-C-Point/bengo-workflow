@@ -1,5 +1,3 @@
-const { schedule } = require('@netlify/functions');
-
 const SUPA_URL = process.env.SUPA_URL;
 const SUPA_KEY = process.env.SUPA_KEY;
 const RESEND_KEY = process.env.RESEND_KEY;
@@ -155,5 +153,4 @@ const handler = async () => {
   return { statusCode: 200 };
 };
 
-// 9am UTC Mon–Fri (= 9am GMT in winter, 10am BST in summer)
-exports.handler = schedule('0 9 * * 1-5', handler);
+exports.handler = handler;
