@@ -1340,6 +1340,7 @@ function populateTaskFilters(){
   // Person dropdown
   document.getElementById('msDropPerson').innerHTML=
     `<div style="padding:2px 8px 6px;border-bottom:1px solid var(--border);margin-bottom:4px"><button onclick="clearFilter('person')" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0;font-family:'Varela Round',sans-serif">Show everyone</button></div>`+
+    `<label><input type="checkbox" value="__unassigned__"${filterPersonIds.has('__unassigned__')?' checked':''} onchange="onMsChange('person')"> <em>Unassigned</em></label>`+
     db.people.filter(p=>p.active!==false).map(p=>
       `<label><input type="checkbox" value="${p.id}"${filterPersonIds.has(p.id)?' checked':''} onchange="onMsChange('person')"> ${p.name}</label>`
     ).join('');
@@ -1376,7 +1377,7 @@ function setTodoView(mode){
 function getFilteredTasks(){
   const q=(document.getElementById('searchTasks')?.value||'').toLowerCase().trim();
   let tasks=[...db.tasks];
-  if(filterPersonIds.size>0) tasks=tasks.filter(t=>filterPersonIds.has(t.assigned_to));
+  if(filterPersonIds.size>0) tasks=tasks.filter(t=>filterPersonIds.has(t.assigned_to)||(filterPersonIds.has('__unassigned__')&&!t.assigned_to));
   if(filterStatuses.size===0) tasks=tasks.filter(t=>t.status!=='Complete');
   else tasks=tasks.filter(t=>filterStatuses.has(t.status));
   if(filterRoles.size>0) tasks=tasks.filter(t=>filterRoles.has(t.role));
@@ -1389,7 +1390,7 @@ function getFilteredTasks(){
   if(q){tasks=tasks.filter(t=>{const ep=epById(t.episode_id),pod=ep?podById(ep.podcast_id):null,person=t.assigned_to?pById(t.assigned_to):null;return[t.name,t.notes,ep?.title,ep?.default_title,pod?.name,pod?.company,person?.name].some(v=>(v||'').toLowerCase().includes(q));});}
   if(filterRoles.size===0){
     let todos=[...db.todos];
-    if(filterPersonIds.size>0) todos=todos.filter(t=>filterPersonIds.has(t.assigned_to));
+    if(filterPersonIds.size>0) todos=todos.filter(t=>filterPersonIds.has(t.assigned_to)||(filterPersonIds.has('__unassigned__')&&!t.assigned_to));
     if(filterStatuses.size===0) todos=todos.filter(t=>t.status!=='Complete');
     else todos=todos.filter(t=>filterStatuses.has(t.status));
     if(filterPodcasts.size>0) todos=todos.filter(t=>!t.podcast_id?filterPodcasts.has('__none__'):filterPodcasts.has(t.podcast_id));
@@ -3101,6 +3102,7 @@ async function applyBulkUpdate(){
       }
     }
     setSync('live');
+    if(assignee){const changed=prevStates.filter(ps=>ps.assigned_to!==assignee).map(ps=>ps.id);sendBulkAssignEmail(assignee,changed);}
     saveUndo(async()=>{
       for(const ps of prevStates){
         const t=db.tasks.find(t=>t.id===ps.id);if(!t)continue;
@@ -3167,6 +3169,7 @@ async function applyEpBulkUpdate(){
       if(Object.keys(patch).length){await api.patch('tasks',tid,patch);Object.assign(t,patch);}
     }
     setSync('live');
+    if(assignee){const changed=prevStates.filter(ps=>ps.assigned_to!==assignee).map(ps=>ps.id);sendBulkAssignEmail(assignee,changed);}
     saveUndo(async()=>{for(const ps of prevStates){const t=db.tasks.find(t=>t.id===ps.id);if(!t)continue;const rev={status:ps.status,assigned_to:ps.assigned_to,due_date:ps.due_date};await api.patch('tasks',ps.id,rev);Object.assign(t,rev);}});
     clearEpBulkSelection();renderEpisodeTasks();notify('Bulk update applied!');
   }catch(err){setSync('error');notify('Error: '+err.message,true);}
@@ -3187,6 +3190,19 @@ async function sendEmail(to, subject, html){
     });
     return res.ok;
   }catch(err){ console.error('Email error:', err); return false; }
+}
+
+async function sendBulkAssignEmail(newPersonId, taskIds){
+  const person=pById(newPersonId);
+  if(!person||!person.email||(person.email_preferences||{}).task_assigned===false)return;
+  const assignedTasks=taskIds.map(id=>db.tasks.find(t=>t.id===id)).filter(Boolean);
+  if(!assignedTasks.length)return;
+  const rows=assignedTasks.map(t=>{
+    const ep=epById(t.episode_id),pod=ep?podById(ep.podcast_id):null;
+    return`<tr><td style="padding:6px 12px;border-bottom:1px solid #eee">${t.name}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;color:#888">${pod?pod.name:''}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;color:#888">${ep?(ep.default_title||'Episode '+ep.number):''}</td><td style="padding:6px 12px;border-bottom:1px solid #eee;color:#888">${t.due_date?formatDate(t.due_date):'—'}</td></tr>`;
+  }).join('');
+  const html=`<p>Hi ${person.name},</p><p>You've been assigned ${assignedTasks.length} task${assignedTasks.length!==1?'s':''}:</p><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr style="background:#f0f0f0"><th style="padding:6px 12px;text-align:left;font-size:12px">Task</th><th style="padding:6px 12px;text-align:left;font-size:12px">Podcast</th><th style="padding:6px 12px;text-align:left;font-size:12px">Episode</th><th style="padding:6px 12px;text-align:left;font-size:12px">Due</th></tr></thead><tbody>${rows}</tbody></table><p>Log in to the Bengo workflow app to view them.</p>`;
+  sendEmail(person.email,`You've been assigned ${assignedTasks.length} task${assignedTasks.length!==1?'s':''}`,html);
 }
 
 async function notifyEpisodeTeam(){
@@ -3993,6 +4009,7 @@ async function applyMyBulkUpdate(){
       if(dateVal)patch.due_date=dateVal;
       if(Object.keys(patch).length){await api.patch('tasks',tid,patch);Object.assign(t,patch);}
     }
+    if(assignee){const changed=prevValues.filter(ps=>ps.assigned_to!==assignee).map(ps=>ps.id);sendBulkAssignEmail(assignee,changed);}
     saveUndo(async()=>{for(const prev of prevValues){const t=db.tasks.find(t=>t.id===prev.id);if(!t)continue;const r={};if(status)r.status=prev.status;if(assignee)r.assigned_to=prev.assigned_to;if(dateVal)r.due_date=prev.due_date;if(Object.keys(r).length){await api.patch('tasks',prev.id,r);Object.assign(t,r);}}});
     setSync('live');clearMyBulkSelection();renderMyTasks();notify('Bulk update applied!');
   }catch(err){setSync('error');notify('Error: '+err.message,true);}
